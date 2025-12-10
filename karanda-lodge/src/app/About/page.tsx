@@ -102,6 +102,17 @@ export default function About() {
               </div>
               <h3>Karanda Lodge</h3>
               <p>No.581/113A, Rathanasara Mawatha, Anuradhapura</p>
+              <div className="map-container">
+                <iframe
+                  src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3940.0!2d80.4!3d8.3!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zOMKwMTgnMDAuMCJOIDgwwrAyNCcwMC4wIkU!5e0!3m2!1sen!2slk!4v1234567890"
+                  width="100%"
+                  height="400"
+                  style={{ border: 0, borderRadius: '12px' }}
+                  allowFullScreen
+                  loading="lazy"
+                  referrerPolicy="no-referrer-when-downgrade"
+                ></iframe>
+              </div>
               <button className="maps-btn" onClick={openGoogleMaps}>
                 View on Google Maps
               </button>
