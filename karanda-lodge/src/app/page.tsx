@@ -8,19 +8,14 @@ import {
   Car,
   Droplet,
   Wind,
-  Mail,
-  Phone,
-  MapPin,
-  Facebook,
-  Instagram,
-  Twitter,
 } from "lucide-react";
 import Image from "next/image";
 import { useEffect, useState } from "react";
+import Navbar from "./components/Navbar";
+import Footer from "./components/Footer";
 
 export default function Home() {
   const [currentSlide, setCurrentSlide] = useState(0);
-  const [scrolled, setScrolled] = useState(false);
   const slides = ["/cover.jpeg", "/IMG_8574.jpeg", "/IMG_9537.jpeg"];
 
   useEffect(() => {
@@ -29,50 +24,9 @@ export default function Home() {
     }, 5000);
     return () => clearInterval(timer);
   }, [slides.length]);
-
-  useEffect(() => {
-    const handleScroll = () => {
-      setScrolled(window.scrollY > 50);
-    };
-
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
   return (
     <>
-      <nav className={`navbar ${scrolled ? "scrolled" : ""}`}>
-        <div className="nav-container">
-          <div className="logo">
-            <Image
-              src="/logo.png"
-              alt="Karanda Lodge"
-              className="logo-icon"
-              width={40}
-              height={40}
-            />
-            <span>Karanda Lodge</span>
-          </div>
-          <ul className="nav-links">
-            <li>
-              <a href="#home" className="active">
-                Home
-              </a>
-            </li>
-            <li>
-              <a href="#rooms">Rooms</a>
-            </li>
-            <li>
-              <a href="#booking">Booking</a>
-            </li>
-            <li>
-              <a href="#gallery">Gallery</a>
-            </li>
-            <li>
-              <a href="#about">About</a>
-            </li>
-          </ul>
-        </div>
-      </nav>
+      <Navbar />
 
       <main className="hero" id="home">
         <div className="slideshow">
@@ -209,69 +163,7 @@ export default function Home() {
         </div>
       </section>
 
-      <footer className="footer">
-        <div className="footer-container">
-          <div className="footer-section">
-            <div className="footer-logo">
-              <Image
-                src="/logo.png"
-                alt="Karanda Lodge"
-                width={40}
-                height={40}
-              />
-              <span>Karanda Lodge</span>
-            </div>
-            <p className="footer-description">
-              Experience nature&apos;s tranquility at Karanda Lodge. Your
-              perfect escape surrounded by lush greenery.
-            </p>
-            <div className="social-links">
-              <a href="#" aria-label="Facebook">
-                <Facebook size={20} />
-              </a>
-              <a href="#" aria-label="Instagram">
-                <Instagram size={20} />
-              </a>
-              <a href="#" aria-label="Twitter">
-                <Twitter size={20} />
-              </a>
-            </div>
-          </div>
-
-          <div className="footer-section">
-            <h3 className="footer-heading">Contact Us</h3>
-            <div className="contact-item">
-              <Mail size={16} />
-              <span>madresort03@gmail.com</span>
-            </div>
-            <div className="contact-item">
-              <Phone size={16} />
-              <span>+94 77 036 7058</span>
-            </div>
-            <div className="contact-item">
-              <MapPin size={16} />
-              <span>No.581, Rathanasara Mawatha, Anuradhapura</span>
-            </div>
-          </div>
-
-          <div className="footer-section">
-            <h3 className="footer-heading">Quick Links</h3>
-            <a href="#" className="footer-link">
-              Privacy Policy
-            </a>
-            <a href="#" className="footer-link">
-              Terms & Conditions
-            </a>
-            <a href="#" className="footer-link">
-              Cancellation Policy
-            </a>
-          </div>
-        </div>
-
-        <div className="footer-bottom">
-          <p>© 2025 Karanda Lodge. All rights reserved.</p>
-        </div>
-      </footer>
+      <Footer />
     </>
   );
 }
