@@ -1,13 +1,12 @@
 "use client";
 import "./home.css";
-import { Star, ExternalLink } from "lucide-react";
+import { Star, ExternalLink, Users, Wifi, Car, Droplet, Wind } from "lucide-react";
 import Image from "next/image";
 import { useEffect, useState } from "react";
 
 export default function Home() {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [scrolled, setScrolled] = useState(false);
-  const [activeSection, setActiveSection] = useState("home");
   const slides = ["/cover.jpeg", "/IMG_8574.jpeg", "/IMG_9537.jpeg"];
 
   useEffect(() => {
@@ -20,24 +19,6 @@ export default function Home() {
   useEffect(() => {
     const handleScroll = () => {
       setScrolled(window.scrollY > 50);
-
-      // Update active section based on scroll position
-      const sections = ["home", "rooms", "booking", "gallery", "about"];
-      const scrollPosition = window.scrollY + 100;
-
-      for (const section of sections) {
-        const element = document.getElementById(section);
-        if (element) {
-          const { offsetTop, offsetHeight } = element;
-          if (
-            scrollPosition >= offsetTop &&
-            scrollPosition < offsetTop + offsetHeight
-          ) {
-            setActiveSection(section);
-            break;
-          }
-        }
-      }
     };
 
     window.addEventListener("scroll", handleScroll);
@@ -59,44 +40,19 @@ export default function Home() {
           </div>
           <ul className="nav-links">
             <li>
-              <a
-                href="#home"
-                className={activeSection === "home" ? "active" : ""}
-              >
-                Home
-              </a>
+              <a href="#home" className="active">Home</a>
             </li>
             <li>
-              <a
-                href="#rooms"
-                className={activeSection === "rooms" ? "active" : ""}
-              >
-                Rooms
-              </a>
+              <a href="#rooms">Rooms</a>
             </li>
             <li>
-              <a
-                href="#booking"
-                className={activeSection === "booking" ? "active" : ""}
-              >
-                Booking
-              </a>
+              <a href="#booking">Booking</a>
             </li>
             <li>
-              <a
-                href="#gallery"
-                className={activeSection === "gallery" ? "active" : ""}
-              >
-                Gallery
-              </a>
+              <a href="#gallery">Gallery</a>
             </li>
             <li>
-              <a
-                href="#about"
-                className={activeSection === "about" ? "active" : ""}
-              >
-                About
-              </a>
+              <a href="#about">About</a>
             </li>
           </ul>
         </div>
@@ -137,6 +93,59 @@ export default function Home() {
           </button>
         </div>
       </main>
+
+      <section className="rooms-section" id="rooms">
+        <div className="rooms-container">
+          <h2 className="rooms-title">Our Premium Rooms</h2>
+          <p className="rooms-subtitle">Choose your perfect sanctuary</p>
+          
+          <div className="rooms-grid">
+            <div className="room-card">
+              <div className="room-image">
+                <Image src="/cover.jpeg" alt="Family Room" width={500} height={300} />
+                <span className="price-badge">$150/night</span>
+              </div>
+              <div className="room-content">
+                <h3 className="room-name">Family Room</h3>
+                <p className="room-description">Perfect for families, spacious and comfortable</p>
+                <div className="room-guests">
+                  <Users size={16} />
+                  <span>4-6 guests</span>
+                </div>
+                <div className="room-amenities">
+                  <span className="amenity"><Wind size={14} /> AC</span>
+                  <span className="amenity"><Wifi size={14} /> WiFi</span>
+                  <span className="amenity"><Car size={14} /> Parking</span>
+                  <span className="amenity"><Droplet size={14} /> Hot Water</span>
+                </div>
+                <button className="view-details-btn">View Details →</button>
+              </div>
+            </div>
+
+            <div className="room-card">
+              <div className="room-image">
+                <Image src="/IMG_8574.jpeg" alt="Double Room" width={500} height={300} />
+                <span className="price-badge">$120/night</span>
+              </div>
+              <div className="room-content">
+                <h3 className="room-name">Double Room</h3>
+                <p className="room-description">Intimate and luxurious for couples</p>
+                <div className="room-guests">
+                  <Users size={16} />
+                  <span>2 guests</span>
+                </div>
+                <div className="room-amenities">
+                  <span className="amenity"><Wind size={14} /> AC</span>
+                  <span className="amenity"><Wifi size={14} /> WiFi</span>
+                  <span className="amenity"><Car size={14} /> Parking</span>
+                  <span className="amenity"><Droplet size={14} /> Hot Water</span>
+                </div>
+                <button className="view-details-btn">View Details →</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
     </>
   );
 }
