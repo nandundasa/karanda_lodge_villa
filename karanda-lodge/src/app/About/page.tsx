@@ -1,5 +1,5 @@
 "use client";
-import { Leaf, Heart, Award, Users, MapPin } from "lucide-react";
+import { Leaf, Heart, Award, Users, MapPin, Star } from "lucide-react";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import "./about.css";
@@ -92,6 +92,81 @@ export default function About() {
           </div>
         </section>
 
+        <section className="feedback-wrapper">
+          <div className="feedback-section">
+            <h2>Guest Feedback</h2>
+            <p className="subtitle">
+              What our guests say about their experience
+            </p>
+            <div className="testimonials">
+              <div className="testimonial-card">
+                <div className="stars">
+                  {[...Array(5)].map((_, i) => (
+                    <Star key={i} size={16} fill="#fbbf24" stroke="#fbbf24" />
+                  ))}
+                </div>
+                <p className="testimonial-text">
+                  The place was clean and modern, equipped with all necessary
+                  amenities. The room was spacious, and the bed was extremely
+                  comfortable. Secure parking was available within the premises.
+                  Its close proximity to major attractions like stupas and
+                  temples in the sacred city was very convenient. Supermarkets
+                  and restaurants were also nearby. The host was very friendly
+                  and went above and beyond to accommodate us, providing
+                  detailed information about local attractions, dining, and
+                  transportation. Highly recommended!
+                </p>
+                <div className="testimonial-author">
+                  <h4>Prageeth Nuwan</h4>
+                  <p>Australia</p>
+                </div>
+                <p className="testimonial-date">July 2024</p>
+              </div>
+              <div className="testimonial-card">
+                <div className="stars">
+                  {[...Array(5)].map((_, i) => (
+                    <Star key={i} size={16} fill="#fbbf24" stroke="#fbbf24" />
+                  ))}
+                </div>
+                <p className="testimonial-text">
+                  We had a lovely stay at Karanda Lodge for two nights. The room
+                  is upstairs in a super nice villa which also has private
+                  parking. The room and the house was very clean, comfortable
+                  and spacious. We really felt welcome by Owner and Manager,
+                  they were very kind and accommodating and provided us nice
+                  recommendations on restaurants. Highly recommend staying here
+                  for your trip to Anuradhapura!
+                </p>
+                <div className="testimonial-author">
+                  <h4>Berlesu</h4>
+                  <p>Rotterdam, Netherlands</p>
+                </div>
+                <p className="testimonial-date">August 2024</p>
+              </div>
+              <div className="testimonial-card">
+                <div className="stars">
+                  {[...Array(5)].map((_, i) => (
+                    <Star key={i} size={16} fill="#fbbf24" stroke="#fbbf24" />
+                  ))}
+                </div>
+                <p className="testimonial-text">
+                  Had a very clean accomodation with calm environment. It has
+                  everything you would expect for the most competitive price. I
+                  recommend it 100%. The property owner and manager did
+                  everything to feel good here. They are very courteous, honest
+                  and helpfull. Thank you Kranda Lodge. Hope to see you all
+                  again.
+                </p>
+                <div className="testimonial-author">
+                  <h4>Sayuri</h4>
+                  <p>Europe</p>
+                </div>
+                <p className="testimonial-date">September 2025</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
         <section className="find-us-wrapper">
           <div className="find-us-section">
             <h2>Find Us</h2>
@@ -107,7 +182,7 @@ export default function About() {
                   src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3940.0!2d80.4!3d8.3!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zOMKwMTgnMDAuMCJOIDgwwrAyNCcwMC4wIkU!5e0!3m2!1sen!2slk!4v1234567890"
                   width="100%"
                   height="400"
-                  style={{ border: 0, borderRadius: '12px' }}
+                  style={{ border: 0, borderRadius: "12px" }}
                   allowFullScreen
                   loading="lazy"
                   referrerPolicy="no-referrer-when-downgrade"
