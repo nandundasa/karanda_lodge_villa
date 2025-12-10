@@ -12,10 +12,12 @@ import {
 } from "lucide-react";
 import Image from "next/image";
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 
 export default function Home() {
+  const router = useRouter();
   const [currentSlide, setCurrentSlide] = useState(0);
   const slides = ["/cover.jpeg", "/IMG_8574.jpeg", "/IMG_9537.jpeg"];
 
@@ -104,7 +106,7 @@ export default function Home() {
                     <Droplet size={14} /> Hot Water
                   </span>
                 </div>
-                <button className="view-details-btn">
+                <button className="view-details-btn" onClick={() => router.push('/Rooms')}>
                   View Details <ArrowRight size={20} />
                 </button>
               </div>
@@ -143,7 +145,7 @@ export default function Home() {
                     <Droplet size={14} /> Hot Water
                   </span>
                 </div>
-                <button className="view-details-btn">
+                <button className="view-details-btn" onClick={() => router.push('/Rooms')}>
                   View Details <ArrowRight size={20} />
                 </button>
               </div>

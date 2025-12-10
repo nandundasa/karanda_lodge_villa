@@ -1,8 +1,11 @@
 "use client";
 import Image from "next/image";
+import Link from "next/link";
 import { useEffect, useState } from "react";
+import { usePathname } from "next/navigation";
 
 export default function Navbar() {
+  const pathname = usePathname();
   const [scrolled, setScrolled] = useState(false);
 
   useEffect(() => {
@@ -29,12 +32,14 @@ export default function Navbar() {
         </div>
         <ul className="nav-links">
           <li>
-            <a href="#home" className="active">
+            <Link href="/" className={pathname === "/" ? "active" : ""}>
               Home
-            </a>
+            </Link>
           </li>
           <li>
-            <a href="#rooms">Rooms</a>
+            <Link href="/Rooms" className={pathname === "/Rooms" ? "active" : ""}>
+              Rooms
+            </Link>
           </li>
           <li>
             <a href="#booking">Booking</a>
