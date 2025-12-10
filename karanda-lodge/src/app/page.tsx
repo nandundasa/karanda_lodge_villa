@@ -1,8 +1,19 @@
+"use client";
 import "./home.css";
-import { Star } from "lucide-react";
+import { Star, ExternalLink } from "lucide-react";
 import Image from "next/image";
+import { useEffect, useState } from "react";
 
 export default function Home() {
+  const [currentSlide, setCurrentSlide] = useState(0);
+  const slides = ["/cover.jpeg", "/IMG_8574.jpeg", "/IMG_9537.jpeg"];
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentSlide((prev) => (prev + 1) % slides.length);
+    }, 5000);
+    return () => clearInterval(timer);
+  }, [slides.length]);
   return (
     <>
       <nav className="navbar">
@@ -38,6 +49,15 @@ export default function Home() {
       </nav>
 
       <main className="hero">
+        <div className="slideshow">
+          {slides.map((slide, index) => (
+            <div
+              key={slide}
+              className={`slide ${index === currentSlide ? "active" : ""}`}
+              style={{ backgroundImage: `url(${slide})` }}
+            />
+          ))}
+        </div>
         <div className="hero-content">
           <div className="rating-badge">
             <span className="star">
@@ -57,7 +77,9 @@ export default function Home() {
           </p>
           <button className="cta-button">
             Check Availability
-            <span className="arrow">→</span>
+            <span className="arrow">
+              <ExternalLink />
+            </span>
           </button>
         </div>
       </main>
