@@ -52,7 +52,9 @@ export default function Navbar() {
             </Link>
           </li>
           <li>
-            <a href="#about">About</a>
+            <Link href="/About" className={pathname === "/About" ? "active" : ""}>
+              About
+            </Link>
           </li>
         </ul>
       </div>
