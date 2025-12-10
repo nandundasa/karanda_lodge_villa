@@ -6,6 +6,8 @@ import { useEffect, useState } from "react";
 
 export default function Home() {
   const [currentSlide, setCurrentSlide] = useState(0);
+  const [scrolled, setScrolled] = useState(false);
+  const [activeSection, setActiveSection] = useState("home");
   const slides = ["/cover.jpeg", "/IMG_8574.jpeg", "/IMG_9537.jpeg"];
 
   useEffect(() => {
@@ -14,9 +16,36 @@ export default function Home() {
     }, 5000);
     return () => clearInterval(timer);
   }, [slides.length]);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setScrolled(window.scrollY > 50);
+
+      // Update active section based on scroll position
+      const sections = ["home", "rooms", "booking", "gallery", "about"];
+      const scrollPosition = window.scrollY + 100;
+
+      for (const section of sections) {
+        const element = document.getElementById(section);
+        if (element) {
+          const { offsetTop, offsetHeight } = element;
+          if (
+            scrollPosition >= offsetTop &&
+            scrollPosition < offsetTop + offsetHeight
+          ) {
+            setActiveSection(section);
+            break;
+          }
+        }
+      }
+    };
+
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
   return (
     <>
-      <nav className="navbar">
+      <nav className={`navbar ${scrolled ? "scrolled" : ""}`}>
         <div className="nav-container">
           <div className="logo">
             <Image
@@ -30,25 +59,50 @@ export default function Home() {
           </div>
           <ul className="nav-links">
             <li>
-              <a href="#home">Home</a>
+              <a
+                href="#home"
+                className={activeSection === "home" ? "active" : ""}
+              >
+                Home
+              </a>
             </li>
             <li>
-              <a href="#rooms">Rooms</a>
+              <a
+                href="#rooms"
+                className={activeSection === "rooms" ? "active" : ""}
+              >
+                Rooms
+              </a>
             </li>
             <li>
-              <a href="#booking">Booking</a>
+              <a
+                href="#booking"
+                className={activeSection === "booking" ? "active" : ""}
+              >
+                Booking
+              </a>
             </li>
             <li>
-              <a href="#gallery">Gallery</a>
+              <a
+                href="#gallery"
+                className={activeSection === "gallery" ? "active" : ""}
+              >
+                Gallery
+              </a>
             </li>
             <li>
-              <a href="#about">About</a>
+              <a
+                href="#about"
+                className={activeSection === "about" ? "active" : ""}
+              >
+                About
+              </a>
             </li>
           </ul>
         </div>
       </nav>
 
-      <main className="hero">
+      <main className="hero" id="home">
         <div className="slideshow">
           {slides.map((slide, index) => (
             <div
