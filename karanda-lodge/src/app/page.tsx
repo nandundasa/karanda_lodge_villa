@@ -8,6 +8,7 @@ import {
   Car,
   Droplet,
   Wind,
+  ArrowRight,
 } from "lucide-react";
 import Image from "next/image";
 import { useEffect, useState } from "react";
@@ -103,7 +104,9 @@ export default function Home() {
                     <Droplet size={14} /> Hot Water
                   </span>
                 </div>
-                <button className="view-details-btn">View Details →</button>
+                <button className="view-details-btn">
+                  View Details <ArrowRight size={20} />
+                </button>
               </div>
             </div>
 
@@ -140,7 +143,9 @@ export default function Home() {
                     <Droplet size={14} /> Hot Water
                   </span>
                 </div>
-                <button className="view-details-btn">View Details →</button>
+                <button className="view-details-btn">
+                  View Details <ArrowRight size={20} />
+                </button>
               </div>
             </div>
           </div>
