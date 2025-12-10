@@ -42,7 +42,9 @@ export default function Navbar() {
             </Link>
           </li>
           <li>
-            <a href="#booking">Booking</a>
+            <Link href="/Booking" className={pathname === "/Booking" ? "active" : ""}>
+              Booking
+            </Link>
           </li>
           <li>
             <a href="#gallery">Gallery</a>
