@@ -1,5 +1,15 @@
 "use client";
-import { Leaf, Heart, Award, Users, MapPin, Star } from "lucide-react";
+import {
+  Leaf,
+  Heart,
+  Award,
+  Users,
+  MapPin,
+  Star,
+  Siren,
+  Building,
+  PhoneOutgoing,
+} from "lucide-react";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import "./about.css";
@@ -62,31 +72,27 @@ export default function About() {
             <div className="features">
               <div className="feature-card">
                 <div className="feature-icon">
+                  <Siren size={32} />
+                </div>
+                <h3>24 hours Customer Service</h3>
+              </div>
+              <div className="feature-card">
+                <div className="feature-icon">
                   <Leaf size={32} />
                 </div>
-                <h3>Eco-Friendly</h3>
-                <p>Sustainable practices and harmony with nature</p>
+                <h3>Cleanliness</h3>
               </div>
               <div className="feature-card">
                 <div className="feature-icon">
-                  <Heart size={32} />
+                  <Building size={32} />
                 </div>
-                <h3>Personalized Service</h3>
-                <p>Tailored experiences for every guest</p>
+                <h3>Spacious</h3>
               </div>
               <div className="feature-card">
                 <div className="feature-icon">
-                  <Award size={32} />
+                  <PhoneOutgoing size={32} />
                 </div>
-                <h3>Award-Winning</h3>
-                <p>Recognized for excellence in hospitality</p>
-              </div>
-              <div className="feature-card">
-                <div className="feature-icon">
-                  <Users size={32} />
-                </div>
-                <h3>Family-Friendly</h3>
-                <p>Perfect for guests of all ages</p>
+                <h3>Happy Customer Service</h3>
               </div>
             </div>
           </div>
