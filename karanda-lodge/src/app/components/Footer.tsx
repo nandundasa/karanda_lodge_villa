@@ -46,7 +46,7 @@ export default function Footer() {
           </div>
           <div className="contact-item">
             <MapPin size={16} />
-            <span>No.581, Rathanasara Mawatha, Anuradhapura</span>
+            <span>No.581/113A, Rathanasara Mawatha, Anuradhapura</span>
           </div>
         </div>
 

@@ -163,8 +163,83 @@
   }
 }
 
+.find-us-wrapper {
+  background: #e8f5e9;
+  padding: 80px 20px;
+}
+
+.find-us-section {
+  max-width: 1200px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.find-us-section h2 {
+  font-size: 36px;
+  font-weight: 700;
+  color: #1a1a1a;
+  margin-bottom: 10px;
+}
+
+.location-card {
+  max-width: 900px;
+  margin: 0 auto;
+  background: rgba(255, 255, 255, 0.6);
+  padding: 60px 40px;
+  border-radius: 16px;
+  backdrop-filter: blur(10px);
+}
+
+.location-icon {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 20px;
+  color: #4a7c59;
+}
+
+.location-card h3 {
+  font-size: 24px;
+  font-weight: 600;
+  color: #1a1a1a;
+  margin-bottom: 10px;
+}
+
+.location-card p {
+  font-size: 16px;
+  color: #666;
+  margin-bottom: 30px;
+}
+
+.maps-btn {
+  background: #4a7c59;
+  color: white;
+  border: none;
+  padding: 14px 32px;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+
+.maps-btn:hover {
+  background: #3d6649;
+}
+
 @media (max-width: 640px) {
   .features {
     grid-template-columns: 1fr;
+  }
+
+  .find-us-wrapper {
+    padding: 60px 20px;
+  }
+
+  .find-us-section h2 {
+    font-size: 28px;
+  }
+
+  .location-card {
+    padding: 40px 30px;
   }
 }
