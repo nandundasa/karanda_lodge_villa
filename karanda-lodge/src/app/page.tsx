@@ -58,7 +58,10 @@ export default function Home() {
             <br />
             surrounded by lush greenery and peaceful ambiance.
           </p>
-          <button className="cta-button">
+          <button
+            className="cta-button"
+            onClick={() => router.push("/Booking")}
+          >
             Check Availability
             <span className="arrow">
               <ExternalLink />
@@ -106,7 +109,10 @@ export default function Home() {
                     <Droplet size={14} /> Hot Water
                   </span>
                 </div>
-                <button className="view-details-btn" onClick={() => router.push('/Rooms')}>
+                <button
+                  className="view-details-btn"
+                  onClick={() => router.push("/Rooms")}
+                >
                   View Details <ArrowRight size={20} />
                 </button>
               </div>
@@ -145,7 +151,10 @@ export default function Home() {
                     <Droplet size={14} /> Hot Water
                   </span>
                 </div>
-                <button className="view-details-btn" onClick={() => router.push('/Rooms')}>
+                <button
+                  className="view-details-btn"
+                  onClick={() => router.push("/Rooms")}
+                >
                   View Details <ArrowRight size={20} />
                 </button>
               </div>
