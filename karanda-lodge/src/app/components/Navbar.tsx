@@ -47,7 +47,9 @@ export default function Navbar() {
             </Link>
           </li>
           <li>
-            <a href="#gallery">Gallery</a>
+            <Link href="/Gallery" className={pathname === "/Gallery" ? "active" : ""}>
+              Gallery
+            </Link>
           </li>
           <li>
             <a href="#about">About</a>
