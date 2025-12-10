@@ -1,7 +1,15 @@
 .about-page {
+  padding-top: 80px;
+}
+
+.story-wrapper {
+  background: #ffffff;
+  padding: 60px 20px;
+}
+
+.story-wrapper .about-content {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 100px 20px 60px;
 }
 
 .about-content {
@@ -56,7 +64,74 @@
   opacity: 0.95;
 }
 
+.why-choose-wrapper {
+  background: #f8f9fa;
+  padding: 80px 20px;
+}
+
+.why-choose-section {
+  max-width: 1200px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.why-choose-section h2 {
+  font-size: 36px;
+  font-weight: 700;
+  color: #1a1a1a;
+  margin-bottom: 10px;
+}
+
+.subtitle {
+  font-size: 16px;
+  color: #666;
+  margin-bottom: 50px;
+}
+
+.features {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 30px;
+}
+
+.feature-card {
+  text-align: center;
+}
+
+.feature-icon {
+  width: 80px;
+  height: 80px;
+  background: #4a7c59;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 20px;
+  color: white;
+}
+
+.feature-card h3 {
+  font-size: 18px;
+  font-weight: 600;
+  color: #1a1a1a;
+  margin-bottom: 10px;
+}
+
+.feature-card p {
+  font-size: 14px;
+  color: #666;
+  line-height: 1.6;
+}
+
 @media (max-width: 968px) {
+  .story-wrapper {
+    padding: 40px 20px;
+  }
+
+  .why-choose-wrapper {
+    padding: 60px 20px;
+  }
+
   .about-content {
     grid-template-columns: 1fr;
     gap: 40px;
@@ -72,5 +147,24 @@
 
   .tree-section h2 {
     font-size: 24px;
+  }
+
+  .features {
+    grid-template-columns: 1fr;
+    gap: 30px;
+  }
+
+  .why-choose-section h2 {
+    font-size: 28px;
+  }
+
+  .features {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 640px) {
+  .features {
+    grid-template-columns: 1fr;
   }
 }

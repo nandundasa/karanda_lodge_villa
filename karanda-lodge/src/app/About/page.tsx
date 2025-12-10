@@ -1,5 +1,5 @@
 "use client";
-import { Leaf } from "lucide-react";
+import { Leaf, Heart, Award, Users } from "lucide-react";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import "./about.css";
@@ -9,7 +9,8 @@ export default function About() {
     <>
       <Navbar />
       <main className="about-page">
-        <div className="about-content">
+        <section className="story-wrapper">
+          <div className="about-content">
           <div className="story-section">
             <h1>Our Story</h1>
             <p>
@@ -47,6 +48,44 @@ export default function About() {
             </p>
           </div>
         </div>
+        </section>
+
+        <section className="why-choose-wrapper">
+          <div className="why-choose-section">
+          <h2>Why Choose Us</h2>
+          <p className="subtitle">What makes Karanda Lodge special</p>
+          <div className="features">
+            <div className="feature-card">
+              <div className="feature-icon">
+                <Leaf size={32} />
+              </div>
+              <h3>Eco-Friendly</h3>
+              <p>Sustainable practices and harmony with nature</p>
+            </div>
+            <div className="feature-card">
+              <div className="feature-icon">
+                <Heart size={32} />
+              </div>
+              <h3>Personalized Service</h3>
+              <p>Tailored experiences for every guest</p>
+            </div>
+            <div className="feature-card">
+              <div className="feature-icon">
+                <Award size={32} />
+              </div>
+              <h3>Award-Winning</h3>
+              <p>Recognized for excellence in hospitality</p>
+            </div>
+            <div className="feature-card">
+              <div className="feature-icon">
+                <Users size={32} />
+              </div>
+              <h3>Family-Friendly</h3>
+              <p>Perfect for guests of all ages</p>
+            </div>
+          </div>
+        </div>
+        </section>
       </main>
       <Footer />
     </>
