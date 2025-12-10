@@ -5,8 +5,8 @@ import {
   MapPin,
   Facebook,
   Instagram,
-  Twitter,
 } from "lucide-react";
+import { SiTiktok } from "react-icons/si";
 
 export default function Footer() {
   return (
@@ -22,14 +22,14 @@ export default function Footer() {
             escape surrounded by lush greenery.
           </p>
           <div className="social-links">
-            <a href="#" aria-label="Facebook">
+            <a href="https://www.facebook.com/share/181Mh5eVQP/?mibextid=wwXIfr" target="_blank" rel="noopener noreferrer" aria-label="Facebook">
               <Facebook size={20} />
             </a>
-            <a href="#" aria-label="Instagram">
+            <a href="https://www.instagram.com/karanda.lodge?igsh=NDNwdmljNjVoemlh&utm_source=qr" target="_blank" rel="noopener noreferrer" aria-label="Instagram">
               <Instagram size={20} />
             </a>
-            <a href="#" aria-label="Twitter">
-              <Twitter size={20} />
+            <a href="https://www.tiktok.com/@karanda.lodge?_r=1&_t=ZS-926Lq8muVux" target="_blank" rel="noopener noreferrer" aria-label="Tiktok">
+              <SiTiktok size={20} />
             </a>
           </div>
         </div>
@@ -46,7 +46,7 @@ export default function Footer() {
           </div>
           <div className="contact-item">
             <MapPin size={16} />
-            <span>No.581, Rathanasara Mawatha, Anuradhapura</span>
+            <span>No.581/113A, Rathanasara Mawatha, Anuradhapura</span>
           </div>
         </div>
 
