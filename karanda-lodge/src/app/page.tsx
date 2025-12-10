@@ -64,7 +64,7 @@ export default function Home() {
         </div>
       </main>
 
-      <section className="rooms-section" id="rooms">
+      <section className="rooms-section">
         <div className="rooms-container">
           <h2 className="rooms-title">Our Premium Rooms</h2>
           <p className="rooms-subtitle">Choose your perfect sanctuary</p>
