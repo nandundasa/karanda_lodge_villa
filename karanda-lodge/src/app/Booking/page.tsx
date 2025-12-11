@@ -24,7 +24,6 @@ interface CalendarProps {
 
 function Calendar({
   title,
-  price,
   roomType,
   bookedDates,
   selectedDates,

@@ -19,7 +19,7 @@ export async function GET(request: Request) {
         beds: "1 Queen",
         description:
           "Intimate and luxurious room designed for couples. Enjoy a romantic ambiance with modern amenities and a private garden view.",
-        images: ["/cover.jpeg", "/IMG_8574.jpeg", "/IMG_9537.jpeg"],
+        images: ["/IMG_8581.jpeg", "/IMG_8574.jpeg", "/IMG_9537.jpeg"],
         availability: {},
         createdAt: new Date(),
         updatedAt: new Date(),
@@ -33,7 +33,7 @@ export async function GET(request: Request) {
         beds: "1 King + 1 Queen",
         description:
           "Spacious and comfortable accommodation perfect for families. Features multiple beds, a private balcony, and stunning garden views.",
-        images: ["/cover.jpeg", "/IMG_8574.jpeg", "/IMG_9537.jpeg"],
+        images: ["/IMG_8574.jpeg", "/IMG_8581.jpeg", "/IMG_9537.jpeg"],
         availability: {},
         createdAt: new Date(),
         updatedAt: new Date(),
@@ -47,7 +47,7 @@ export async function GET(request: Request) {
         beds: "1 King + 2 Queen + Double mattress",
         description:
           "Exclusive luxury villa offering complete privacy and comfort. Perfect for groups or families seeking a premium experience with spacious living areas, multiple bedrooms, and stunning panoramic views.",
-        images: ["/cover.jpeg", "/IMG_8574.jpeg", "/IMG_9537.jpeg"],
+        images: ["/IMG_9537.jpeg", "/IMG_8574.jpeg", "/IMG_8581.jpeg"],
         availability: {},
         createdAt: new Date(),
         updatedAt: new Date(),

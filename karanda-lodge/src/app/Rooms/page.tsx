@@ -206,6 +206,46 @@ export default function Rooms() {
     return () => clearInterval(interval);
   }, []);
 
+  // Get combined availability for Villa (includes Family Room + Double Room bookings)
+  const getVillaAvailability = (): Record<string, boolean> => {
+    const familyRoom = rooms.find((r) => r.id === "family-room");
+    const doubleRoom = rooms.find((r) => r.id === "double-room");
+    const villa = rooms.find((r) => r.id === "villa");
+
+    const combined: Record<string, boolean> = {};
+
+    // Add Villa's own bookings
+    if (villa?.availability) {
+      Object.entries(villa.availability).forEach(([date, isBooked]) => {
+        if (isBooked) combined[date] = true;
+      });
+    }
+
+    // Add Family Room bookings (Villa is unavailable when Family Room is booked)
+    if (familyRoom?.availability) {
+      Object.entries(familyRoom.availability).forEach(([date, isBooked]) => {
+        if (isBooked) combined[date] = true;
+      });
+    }
+
+    // Add Double Room bookings (Villa is unavailable when Double Room is booked)
+    if (doubleRoom?.availability) {
+      Object.entries(doubleRoom.availability).forEach(([date, isBooked]) => {
+        if (isBooked) combined[date] = true;
+      });
+    }
+
+    return combined;
+  };
+
+  // Get availability for a room (with special handling for Villa)
+  const getRoomAvailability = (room: Room): Record<string, boolean> => {
+    if (room.id === "villa") {
+      return getVillaAvailability();
+    }
+    return room.availability || {};
+  };
+
   return (
     <>
       <Navbar />
@@ -270,7 +310,7 @@ export default function Rooms() {
                   {showCalendar === room.id ? "Hide" : "View"} Calendar
                 </button>
                 {showCalendar === room.id && (
-                  <RoomCalendar availability={room.availability || {}} />
+                  <RoomCalendar availability={getRoomAvailability(room)} />
                 )}
               </div>
             </div>
