@@ -25,9 +25,9 @@ interface Room {
   description: string;
   price: number;
   images?: string[];
-  guests?: number;
+  guests?: string | number;
   capacity?: number;
-  beds?: number;
+  beds?: string | number;
   availability?: Record<string, boolean>;
 }
 

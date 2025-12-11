@@ -14,7 +14,6 @@ type Room = {
 
 interface CalendarProps {
   title: string;
-  price: string;
   roomType: "family" | "double" | "villa";
   bookedDates: string[];
   selectedDates: string[];
@@ -100,9 +99,7 @@ function Calendar({
 
   return (
     <div className="calendar-card">
-      <h2 className="calendar-title">
-        {title} - {price}
-      </h2>
+      <h2 className="calendar-title">{title}</h2>
       <div className="calendar-header">
         <button onClick={prevMonth} className="nav-btn">
           <ChevronLeft size={20} />
@@ -247,7 +244,6 @@ export default function Booking() {
         <div className="calendars-container">
           <Calendar
             title="Family Room"
-            price="$150/night"
             roomType="family"
             bookedDates={[...familyBooked, ...villaBooked]}
             selectedDates={familySelected}
@@ -257,7 +253,6 @@ export default function Booking() {
           />
           <Calendar
             title="Double Room"
-            price="$120/night"
             roomType="double"
             bookedDates={[...doubleBooked, ...villaBooked]}
             selectedDates={doubleSelected}
@@ -267,7 +262,6 @@ export default function Booking() {
           />
           <Calendar
             title="Entire Villa"
-            price="$270/night"
             roomType="villa"
             bookedDates={getVillaBookedDates()}
             selectedDates={villaSelected}
