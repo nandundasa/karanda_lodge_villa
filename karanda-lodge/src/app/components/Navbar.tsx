@@ -3,6 +3,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
+import "../home.css";
 
 export default function Navbar() {
   const pathname = usePathname();
@@ -37,22 +38,34 @@ export default function Navbar() {
             </Link>
           </li>
           <li>
-            <Link href="/Rooms" className={pathname === "/Rooms" ? "active" : ""}>
+            <Link
+              href="/Rooms"
+              className={pathname === "/Rooms" ? "active" : ""}
+            >
               Rooms
             </Link>
           </li>
           <li>
-            <Link href="/Booking" className={pathname === "/Booking" ? "active" : ""}>
+            <Link
+              href="/Booking"
+              className={pathname === "/Booking" ? "active" : ""}
+            >
               Booking
             </Link>
           </li>
           <li>
-            <Link href="/Gallery" className={pathname === "/Gallery" ? "active" : ""}>
+            <Link
+              href="/Gallery"
+              className={pathname === "/Gallery" ? "active" : ""}
+            >
               Gallery
             </Link>
           </li>
           <li>
-            <Link href="/About" className={pathname === "/About" ? "active" : ""}>
+            <Link
+              href="/About"
+              className={pathname === "/About" ? "active" : ""}
+            >
               About
             </Link>
           </li>

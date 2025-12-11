@@ -1,12 +1,7 @@
 import Image from "next/image";
-import {
-  Mail,
-  Phone,
-  MapPin,
-  Facebook,
-  Instagram,
-} from "lucide-react";
+import { Mail, Phone, MapPin, Facebook, Instagram } from "lucide-react";
 import { SiTiktok } from "react-icons/si";
+import "../home.css";
 
 export default function Footer() {
   return (
@@ -22,13 +17,28 @@ export default function Footer() {
             escape surrounded by lush greenery.
           </p>
           <div className="social-links">
-            <a href="https://www.facebook.com/share/181Mh5eVQP/?mibextid=wwXIfr" target="_blank" rel="noopener noreferrer" aria-label="Facebook">
+            <a
+              href="https://www.facebook.com/share/181Mh5eVQP/?mibextid=wwXIfr"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="Facebook"
+            >
               <Facebook size={20} />
             </a>
-            <a href="https://www.instagram.com/karanda.lodge?igsh=NDNwdmljNjVoemlh&utm_source=qr" target="_blank" rel="noopener noreferrer" aria-label="Instagram">
+            <a
+              href="https://www.instagram.com/karanda.lodge?igsh=NDNwdmljNjVoemlh&utm_source=qr"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="Instagram"
+            >
               <Instagram size={20} />
             </a>
-            <a href="https://www.tiktok.com/@karanda.lodge?_r=1&_t=ZS-926Lq8muVux" target="_blank" rel="noopener noreferrer" aria-label="Tiktok">
+            <a
+              href="https://www.tiktok.com/@karanda.lodge?_r=1&_t=ZS-926Lq8muVux"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="Tiktok"
+            >
               <SiTiktok size={20} />
             </a>
           </div>
