@@ -19,9 +19,26 @@ import Footer from "./components/Footer";
 export default function Home() {
   const router = useRouter();
   const [currentSlide, setCurrentSlide] = useState(0);
-  const slides = ["/cover.jpeg", "/IMG_8574.jpeg", "/IMG_9537.jpeg"];
+  const [slides, setSlides] = useState<string[]>([]);
 
   useEffect(() => {
+    const loadSlides = () => {
+      fetch("/api/slides?t=" + Date.now())
+        .then((res) => res.json())
+        .then((data) => {
+          if (data.slides && data.slides.length > 0) {
+            setSlides(data.slides);
+          }
+        })
+        .catch((err) => console.error("Error loading slides:", err));
+    };
+    loadSlides();
+    const interval = setInterval(loadSlides, 3000);
+    return () => clearInterval(interval);
+  }, []);
+
+  useEffect(() => {
+    if (slides.length === 0) return;
     const timer = setInterval(() => {
       setCurrentSlide((prev) => (prev + 1) % slides.length);
     }, 5000);
@@ -33,7 +50,7 @@ export default function Home() {
 
       <main className="hero" id="home">
         <div className="slideshow">
-          {slides.map((slide, index) => (
+          {slides.length > 0 && slides.map((slide, index) => (
             <div
               key={slide}
               className={`slide ${index === currentSlide ? "active" : ""}`}

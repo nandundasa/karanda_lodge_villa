@@ -1,6 +1,6 @@
 "use client";
 import Image from "next/image";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { X, ChevronLeft, ChevronRight } from "lucide-react";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
@@ -8,15 +8,23 @@ import "./gallery.css";
 
 export default function Gallery() {
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
+  const [images, setImages] = useState<any[]>([]);
 
-  const images = [
-    { src: "/cover.jpeg", alt: "Karanda Lodge Exterior", span: "tall" },
-    { src: "/IMG_8574.jpeg", alt: "Bedroom Interior", span: "wide" },
-    { src: "/IMG_9537.jpeg", alt: "Pool View", span: "normal" },
-    { src: "/cover.jpeg", alt: "Living Area", span: "normal" },
-    { src: "/IMG_8574.jpeg", alt: "Dining Area", span: "tall" },
-    { src: "/IMG_9537.jpeg", alt: "Garden View", span: "normal" },
-  ];
+  useEffect(() => {
+    const loadGallery = () => {
+      fetch("/api/gallery?t=" + Date.now())
+        .then((res) => res.json())
+        .then((data) => {
+          if (data.images && data.images.length > 0) {
+            setImages(data.images);
+          }
+        })
+        .catch((err) => console.error("Error loading gallery:", err));
+    };
+    loadGallery();
+    const interval = setInterval(loadGallery, 3000);
+    return () => clearInterval(interval);
+  }, []);
 
   return (
     <>

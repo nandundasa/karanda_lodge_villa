@@ -13,7 +13,7 @@ import {
   ChevronRight,
 } from "lucide-react";
 import Image from "next/image";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import "./rooms.css";
@@ -67,166 +67,76 @@ function RoomSlideshow({ images, alt }: { images: string[]; alt: string }) {
 }
 
 export default function Rooms() {
-  const familyRoomImages = ["/cover.jpeg", "/IMG_8574.jpeg", "/IMG_9537.jpeg"];
-  const doubleRoomImages = ["/cover.jpeg", "/IMG_8574.jpeg", "/IMG_9537.jpeg"];
-  const villaImages = ["/cover.jpeg", "/IMG_8574.jpeg", "/IMG_9537.jpeg"];
+  const [rooms, setRooms] = useState<any[]>([]);
+
+  useEffect(() => {
+    const loadRooms = () => {
+      fetch("/api/rooms?t=" + Date.now())
+        .then((res) => res.json())
+        .then((data) => {
+          if (data.rooms && data.rooms.length > 0) {
+            setRooms(data.rooms);
+          }
+        })
+        .catch((err) => console.error("Error loading rooms:", err));
+    };
+    loadRooms();
+    const interval = setInterval(loadRooms, 3000);
+    return () => clearInterval(interval);
+  }, []);
 
   return (
     <>
       <Navbar />
       <main className="rooms-page">
-        <div className="room-detail">
-          <div className="room-image-container">
-            <RoomSlideshow images={familyRoomImages} alt="Family Room" />
-            <span className="price-tag">Rs.7500/night</span>
-          </div>
-          <div className="room-info">
-            <h1 className="room-title">Family Room</h1>
-            <p className="room-desc">
-              Spacious and comfortable accommodation perfect for families.
-              Features multiple beds, a private balcony, and stunning garden
-              views.
-            </p>
-            <div className="room-stats">
-              <div className="stat">
-                <Users size={20} />
-                <span>4-5 guests</span>
-              </div>
-              <div className="stat">
-                <Bed size={20} />
-                <span>1 King + 1 Queen</span>
-              </div>
+        {rooms.map((room) => (
+          <div key={room.id} className="room-detail">
+            <div className="room-image-container">
+              <RoomSlideshow images={room.images} alt={room.name} />
+              <span className="price-tag">Rs.{room.price}/night</span>
             </div>
-            <div className="room-features">
-              <h3>Room Features</h3>
-              <div className="features-grid">
-                <div className="feature">
-                  <Wind size={18} /> Air Conditioning
+            <div className="room-info">
+              <h1 className="room-title">{room.name}</h1>
+              <p className="room-desc">{room.description}</p>
+              <div className="room-stats">
+                <div className="stat">
+                  <Users size={20} />
+                  <span>{room.guests}</span>
                 </div>
-                <div className="feature">
-                  <Wifi size={18} /> Free WiFi
-                </div>
-                <div className="feature">
-                  <Car size={18} /> Free Parking
-                </div>
-                <div className="feature">
-                  <Droplet size={18} /> Hot Water
-                </div>
-                <div className="feature">
-                  <Coffee size={18} /> Coffee Maker
-                </div>
-                <div className="feature">
-                  <Tv size={18} /> Smart TV
+                <div className="stat">
+                  <Bed size={20} />
+                  <span>{room.beds}</span>
                 </div>
               </div>
+              <div className="room-features">
+                <h3>Room Features</h3>
+                <div className="features-grid">
+                  <div className="feature">
+                    <Wind size={18} /> Air Conditioning
+                  </div>
+                  <div className="feature">
+                    <Wifi size={18} /> Free WiFi
+                  </div>
+                  <div className="feature">
+                    <Car size={18} /> Free Parking
+                  </div>
+                  <div className="feature">
+                    <Droplet size={18} /> Hot Water
+                  </div>
+                  <div className="feature">
+                    <Coffee size={18} /> Coffee Maker
+                  </div>
+                  <div className="feature">
+                    <Tv size={18} /> Smart TV
+                  </div>
+                </div>
+              </div>
+              <button className="calendar-btn">
+                View Calendar <ArrowRight size={20} />
+              </button>
             </div>
-            <button className="calendar-btn">
-              View Calendar <ArrowRight size={20} />
-            </button>
           </div>
-        </div>
-
-        <div className="room-detail">
-          <div className="room-image-container">
-            <RoomSlideshow images={doubleRoomImages} alt="Double Room" />
-            <span className="price-tag">Rs.5500/night</span>
-          </div>
-          <div className="room-info">
-            <h1 className="room-title">Double Room</h1>
-            <p className="room-desc">
-              Intimate and luxurious room designed for couples. Enjoy a romantic
-              ambiance with modern amenities and a private garden view.
-            </p>
-            <div className="room-stats">
-              <div className="stat">
-                <Users size={20} />
-                <span>2 guests</span>
-              </div>
-              <div className="stat">
-                <Bed size={20} />
-                <span>1 Queen</span>
-              </div>
-            </div>
-            <div className="room-features">
-              <h3>Room Features</h3>
-              <div className="features-grid">
-                <div className="feature">
-                  <Wind size={18} /> Air Conditioning
-                </div>
-                <div className="feature">
-                  <Wifi size={18} /> Free WiFi
-                </div>
-                <div className="feature">
-                  <Car size={18} /> Free Parking
-                </div>
-                <div className="feature">
-                  <Droplet size={18} /> Hot Water
-                </div>
-                <div className="feature">
-                  <Coffee size={18} /> Coffee Maker
-                </div>
-                <div className="feature">
-                  <Tv size={18} /> Smart TV
-                </div>
-              </div>
-            </div>
-            <button className="calendar-btn">
-              View Calendar <ArrowRight size={20} />
-            </button>
-          </div>
-        </div>
-
-        <div className="room-detail">
-          <div className="room-image-container">
-            <RoomSlideshow images={villaImages} alt="Villa" />
-            <span className="price-tag">Rs.17000/night</span>
-          </div>
-          <div className="room-info">
-            <h1 className="room-title">Villa</h1>
-            <p className="room-desc">
-              Exclusive luxury villa offering complete privacy and comfort.
-              Perfect for groups or families seeking a premium experience with
-              spacious living areas, multiple bedrooms, and stunning panoramic
-              views.
-            </p>
-            <div className="room-stats">
-              <div className="stat">
-                <Users size={20} />
-                <span>7 - 9 guests</span>
-              </div>
-              <div className="stat">
-                <Bed size={20} />
-                <span>1 King + 2 Queen + Double mattress</span>
-              </div>
-            </div>
-            <div className="room-features">
-              <h3>Room Features</h3>
-              <div className="features-grid">
-                <div className="feature">
-                  <Wind size={18} /> Air Conditioning
-                </div>
-                <div className="feature">
-                  <Wifi size={18} /> Free WiFi
-                </div>
-                <div className="feature">
-                  <Car size={18} /> Free Parking
-                </div>
-                <div className="feature">
-                  <Droplet size={18} /> Hot Water
-                </div>
-                <div className="feature">
-                  <Coffee size={18} /> Coffee Maker
-                </div>
-                <div className="feature">
-                  <Tv size={18} /> Smart TV
-                </div>
-              </div>
-            </div>
-            <button className="calendar-btn">
-              View Calendar <ArrowRight size={20} />
-            </button>
-          </div>
-        </div>
+        ))}
       </main>
       <Footer />
     </>
