@@ -31,14 +31,51 @@ export default function Dashboard() {
   }, []);
 
   const loadData = async () => {
-    const [slidesRes, galleryRes, roomsRes] = await Promise.all([
-      fetch("/api/slides"),
-      fetch("/api/gallery"),
-      fetch("/api/rooms"),
-    ]);
-    setSlides((await slidesRes.json()).slides);
-    setGallery((await galleryRes.json()).images);
-    setRooms((await roomsRes.json()).rooms);
+    try {
+      const [slidesRes, galleryRes, roomsRes] = await Promise.all([
+        fetch("/api/slides?t=" + Date.now()),
+        fetch("/api/gallery?t=" + Date.now()),
+        fetch("/api/rooms?t=" + Date.now()),
+      ]);
+      const slidesData = await slidesRes.json();
+      const galleryData = await galleryRes.json();
+      const roomsData = await roomsRes.json();
+
+      // Extract URLs from slides, handling nested objects
+      const extractedSlides = (slidesData.slides || [])
+        .map((slide: any) => {
+          let url = slide;
+          // Keep drilling down until we get a string
+          while (url && typeof url === "object") {
+            url = url.url || url.src || url;
+            if (typeof url === "object" && url.url === url) break; // Prevent infinite loop
+          }
+          return typeof url === "string" ? url : null;
+        })
+        .filter((url: any) => url && url.length > 0);
+      setSlides(extractedSlides);
+      // Gallery API returns { images: [...] } format
+      if (galleryData.images) {
+        setGallery(galleryData.images);
+      } else if (Array.isArray(galleryData)) {
+        setGallery(
+          galleryData.map((img: any) => ({
+            src: img.url || img.src,
+            alt: img.description || "Gallery Image",
+            span: "normal",
+            _id: img._id,
+          }))
+        );
+      } else {
+        setGallery([]);
+      }
+      setRooms(roomsData.rooms || []);
+    } catch (error) {
+      console.error("Error loading data:", error);
+      setGallery([]);
+      setSlides([]);
+      setRooms([]);
+    }
   };
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -57,13 +94,23 @@ export default function Dashboard() {
     if (data.success) {
       if (activeTab === "slides") {
         setSlides([...slides, data.path]);
+        alert("Image uploaded! Don't forget to click Save Changes.");
       } else if (activeTab === "gallery") {
-        setGallery([
-          ...gallery,
-          { src: data.path, alt: "Gallery Image", span: "normal" },
-        ]);
+        // Auto-save to database for gallery
+        await fetch("/api/gallery", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            filename: data.path.split("/").pop(),
+            path: data.path,
+            url: data.path,
+            category: "gallery",
+            description: "Gallery Image",
+          }),
+        });
+        await loadData(); // Reload to get the new image with _id
+        alert("Image uploaded and saved!");
       }
-      alert("Image uploaded! Don't forget to click Save Changes.");
     }
   };
 
@@ -82,7 +129,21 @@ export default function Dashboard() {
     ]);
   };
 
-  const removeFromGallery = (index: number) => {
+  const removeFromGallery = async (index: number) => {
+    const imageToDelete = gallery[index];
+
+    // If the image has an _id, delete it from the database
+    if (imageToDelete && imageToDelete._id) {
+      try {
+        await fetch(`/api/gallery?id=${imageToDelete._id}`, {
+          method: "DELETE",
+        });
+      } catch (error) {
+        console.error("Error deleting from database:", error);
+      }
+    }
+
+    // Remove from local state
     setGallery(gallery.filter((_, i) => i !== index));
   };
 
@@ -96,74 +157,66 @@ export default function Dashboard() {
   };
 
   const saveGallery = async () => {
-    await fetch("/api/gallery", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ images: gallery }),
-    });
-    alert("Gallery saved! Changes will appear on the website.");
+    try {
+      // Only save new items (without _id)
+      const newImages = gallery.filter((img) => !img._id && img.src);
+
+      for (const img of newImages) {
+        await fetch("/api/gallery", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            filename: img.src.split("/").pop(),
+            path: img.src,
+            url: img.src,
+            category: "gallery",
+            description: img.alt,
+          }),
+        });
+      }
+
+      // Reload to get updated data with _ids
+      await loadData();
+      alert("Gallery saved!");
+    } catch (error) {
+      console.error("Error saving gallery:", error);
+      alert("Failed to save gallery");
+    }
   };
 
   const toggleAvailability = (roomId: string, date: string) => {
     setRooms((prevRooms) => {
       const room = prevRooms.find((r) => r.id === roomId);
-      const newBookedState = !room?.availability[date];
+      const currentState = room?.availability?.[date];
+      const newBookedState = !currentState;
 
       return prevRooms.map((r) => {
-        // If toggling villa, update all three rooms
+        // If booking Villa, also book Double Room and Family Room
         if (roomId === "villa") {
           if (
             r.id === "villa" ||
-            r.id === "family-room" ||
-            r.id === "double-room"
+            r.id === "double-room" ||
+            r.id === "family-room"
           ) {
             return {
               ...r,
               availability: {
-                ...r.availability,
+                ...(r.availability || {}),
                 [date]: newBookedState,
               },
             };
           }
+          return r;
         }
-        // If toggling family or double room
-        else if (roomId === "family-room" || roomId === "double-room") {
-          // Update the clicked room
-          if (r.id === roomId) {
-            return {
-              ...r,
-              availability: {
-                ...r.availability,
-                [date]: newBookedState,
-              },
-            };
-          }
-          // Update villa based on both rooms' status
-          if (r.id === "villa") {
-            let villaBooked = false;
-            const familyBooked =
-              roomId === "family-room"
-                ? newBookedState
-                : prevRooms.find((rm) => rm.id === "family-room")?.availability[
-                    date
-                  ] || false;
-            const doubleBooked =
-              roomId === "double-room"
-                ? newBookedState
-                : prevRooms.find((rm) => rm.id === "double-room")?.availability[
-                    date
-                  ] || false;
-
-            villaBooked = familyBooked || doubleBooked;
-
-            return {
-              ...r,
-              availability: {
-                ...r.availability,
-                [date]: villaBooked,
-              },
-            };
-          }
+        // For Double Room or Family Room, only update that specific room
+        if (r.id === roomId) {
+          return {
+            ...r,
+            availability: {
+              ...(r.availability || {}),
+              [date]: newBookedState,
+            },
+          };
         }
         return r;
       });
@@ -171,12 +224,33 @@ export default function Dashboard() {
   };
 
   const saveRooms = async () => {
-    await fetch("/api/rooms", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ rooms }),
-    });
-    alert("Room availability saved! Changes will appear on the website.");
+    try {
+      console.log("Saving rooms:", rooms);
+      const response = await fetch("/api/rooms", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ rooms }),
+      });
+
+      const data = await response.json();
+      console.log("Save response:", response.status, data);
+
+      if (response.ok && data.success) {
+        // Reload the rooms data to ensure consistency
+        const reloadRes = await fetch("/api/rooms?t=" + Date.now());
+        const reloadData = await reloadRes.json();
+        if (reloadData.rooms) {
+          setRooms(reloadData.rooms);
+        }
+        alert("Room availability saved!");
+      } else {
+        console.error("Save failed:", data);
+        alert("Error saving: " + (data.error || "Unknown error"));
+      }
+    } catch (error) {
+      console.error("Error saving rooms:", error);
+      alert("Network error. Please check your connection.");
+    }
   };
 
   const getDatesForMonth = () => {
@@ -269,17 +343,19 @@ export default function Dashboard() {
               </label>
             </div>
             <div className="image-grid">
-              {slides.map((slide, index) => (
-                <div key={index} className="image-item">
-                  <Image src={slide} alt={`Slide ${index}`} fill />
-                  <button
-                    className="delete-btn"
-                    onClick={() => removeFromSlides(index)}
-                  >
-                    <X size={16} />
-                  </button>
-                </div>
-              ))}
+              {(slides || [])
+                .filter((slide: string) => slide && slide.length > 0)
+                .map((slideUrl: string, index: number) => (
+                  <div key={index} className="image-item">
+                    <Image src={slideUrl} alt={`Slide ${index}`} fill />
+                    <button
+                      className="delete-btn"
+                      onClick={() => removeFromSlides(index)}
+                    >
+                      <X size={16} />
+                    </button>
+                  </div>
+                ))}
             </div>
             <button className="save-btn" onClick={saveSlides}>
               Save Changes
@@ -301,21 +377,24 @@ export default function Dashboard() {
               </label>
             </div>
             <div className="image-grid">
-              {gallery.map((img, index) => (
-                <div key={index} className="image-item">
-                  <Image src={img.src} alt={img.alt} fill />
-                  <button
-                    className="delete-btn"
-                    onClick={() => removeFromGallery(index)}
-                  >
-                    <X size={16} />
-                  </button>
-                </div>
-              ))}
+              {(gallery || [])
+                .filter((img) => img.src && img.src.trim())
+                .map((img, index) => (
+                  <div key={index} className="image-item">
+                    <Image
+                      src={img.src}
+                      alt={img.alt || "Gallery Image"}
+                      fill
+                    />
+                    <button
+                      className="delete-btn"
+                      onClick={() => removeFromGallery(index)}
+                    >
+                      <X size={16} />
+                    </button>
+                  </div>
+                ))}
             </div>
-            <button className="save-btn" onClick={saveGallery}>
-              Save Changes
-            </button>
           </div>
         )}
 
@@ -364,7 +443,7 @@ export default function Dashboard() {
                   ))}
                   {getDatesForMonth().map((date) => {
                     const room = rooms.find((r) => r.id === selectedRoom);
-                    const isBooked = room?.availability[date];
+                    const isBooked = room?.availability?.[date] === true;
                     // Parse date parts to avoid timezone issues
                     const [year, month, day] = date.split("-").map(Number);
 

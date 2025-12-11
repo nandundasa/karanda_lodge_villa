@@ -10,6 +10,11 @@ export default function Gallery() {
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
   const [images, setImages] = useState<any[]>([]);
 
+  // Filter out images with empty src
+  const validImages = images.filter(
+    (image) => image.src && image.src.length > 0
+  );
+
   useEffect(() => {
     const loadGallery = () => {
       fetch("/api/gallery?t=" + Date.now())
@@ -31,15 +36,15 @@ export default function Gallery() {
       <Navbar />
       <main className="gallery-page">
         <div className="gallery-grid">
-          {images.map((image, index) => (
+          {validImages.map((image, index) => (
             <div
               key={index}
-              className={`gallery-item ${image.span}`}
+              className={`gallery-item ${image.span || "normal"}`}
               onClick={() => setSelectedIndex(index)}
             >
               <Image
                 src={image.src}
-                alt={image.alt}
+                alt={image.alt || "Gallery Image"}
                 fill
                 className="gallery-image"
                 sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
@@ -48,16 +53,21 @@ export default function Gallery() {
           ))}
         </div>
 
-        {selectedIndex !== null && (
+        {selectedIndex !== null && validImages[selectedIndex] && (
           <div className="modal" onClick={() => setSelectedIndex(null)}>
-            <button className="modal-close" onClick={() => setSelectedIndex(null)}>
+            <button
+              className="modal-close"
+              onClick={() => setSelectedIndex(null)}
+            >
               <X size={32} />
             </button>
             <button
               className="modal-nav prev"
               onClick={(e) => {
                 e.stopPropagation();
-                setSelectedIndex((selectedIndex - 1 + images.length) % images.length);
+                setSelectedIndex(
+                  (selectedIndex - 1 + validImages.length) % validImages.length
+                );
               }}
             >
               <ChevronLeft size={32} />
@@ -66,15 +76,15 @@ export default function Gallery() {
               className="modal-nav next"
               onClick={(e) => {
                 e.stopPropagation();
-                setSelectedIndex((selectedIndex + 1) % images.length);
+                setSelectedIndex((selectedIndex + 1) % validImages.length);
               }}
             >
               <ChevronRight size={32} />
             </button>
             <div className="modal-content" onClick={(e) => e.stopPropagation()}>
               <Image
-                src={images[selectedIndex].src}
-                alt={images[selectedIndex].alt}
+                src={validImages[selectedIndex].src}
+                alt={validImages[selectedIndex].alt || "Gallery Image"}
                 width={1920}
                 height={1080}
                 className="modal-image"

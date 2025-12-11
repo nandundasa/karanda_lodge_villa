@@ -19,7 +19,7 @@ import Footer from "./components/Footer";
 export default function Home() {
   const router = useRouter();
   const [currentSlide, setCurrentSlide] = useState(0);
-  const [slides, setSlides] = useState<string[]>([]);
+  const [slides, setSlides] = useState<any[]>([]);
 
   useEffect(() => {
     const loadSlides = () => {
@@ -27,7 +27,19 @@ export default function Home() {
         .then((res) => res.json())
         .then((data) => {
           if (data.slides && data.slides.length > 0) {
-            setSlides(data.slides);
+            // Handle deeply nested URL objects from corrupted database
+            const formattedSlides = data.slides
+              .map((slide: any) => {
+                let url = slide;
+                // Keep drilling down until we get a string
+                while (url && typeof url === "object") {
+                  url = url.url || url.src || url;
+                  if (typeof url === "object" && url.url === url) break;
+                }
+                return typeof url === "string" ? url : null;
+              })
+              .filter((slide: any) => slide && slide.length > 0);
+            setSlides(formattedSlides);
           }
         })
         .catch((err) => console.error("Error loading slides:", err));
@@ -50,13 +62,14 @@ export default function Home() {
 
       <main className="hero" id="home">
         <div className="slideshow">
-          {slides.length > 0 && slides.map((slide, index) => (
-            <div
-              key={slide}
-              className={`slide ${index === currentSlide ? "active" : ""}`}
-              style={{ backgroundImage: `url(${slide})` }}
-            />
-          ))}
+          {slides.length > 0 &&
+            slides.map((slide, index) => (
+              <div
+                key={index}
+                className={`slide ${index === currentSlide ? "active" : ""}`}
+                style={{ backgroundImage: `url(${slide})` }}
+              />
+            ))}
         </div>
         <div className="hero-content">
           <div className="rating-badge">
