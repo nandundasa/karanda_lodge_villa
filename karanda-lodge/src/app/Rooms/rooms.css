@@ -211,3 +211,135 @@
     grid-template-columns: 1fr;
   }
 }
+.no-rooms {
+  text-align: center;
+  padding: 80px 20px;
+  color: #666;
+}
+
+.no-rooms p {
+  font-size: 1.2rem;
+  color: #999;
+}
+
+/* Room Calendar Styles */
+.room-calendar {
+  margin-top: 20px;
+  padding: 20px;
+  background: #f9f9f9;
+  border-radius: 12px;
+  border: 1px solid #e0e0e0;
+}
+
+.calendar-nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.calendar-nav button {
+  background: #4a7c59;
+  color: white;
+  border: none;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.calendar-nav button:hover {
+  background: #3d6b4a;
+}
+
+.calendar-nav span {
+  font-weight: 600;
+  color: #333;
+}
+
+.calendar-weekdays {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+  margin-bottom: 8px;
+}
+
+.calendar-weekdays span {
+  text-align: center;
+  font-size: 12px;
+  font-weight: 600;
+  color: #666;
+  padding: 5px;
+}
+
+.calendar-days {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+}
+
+.calendar-day {
+  aspect-ratio: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  border-radius: 6px;
+  cursor: default;
+}
+
+.calendar-day.empty {
+  background: transparent;
+}
+
+.calendar-day.available {
+  background: #e8f5e9;
+  color: #2e7d32;
+}
+
+.calendar-day.booked {
+  background: #ffebee;
+  color: #c62828;
+  font-weight: 600;
+}
+
+.calendar-day.past {
+  opacity: 0.4;
+}
+
+.calendar-legend {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  margin-top: 15px;
+  padding-top: 15px;
+  border-top: 1px solid #e0e0e0;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: #666;
+}
+
+.legend-item .dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+}
+
+.legend-item .dot.available {
+  background: #e8f5e9;
+  border: 1px solid #2e7d32;
+}
+
+.legend-item .dot.booked {
+  background: #ffebee;
+  border: 1px solid #c62828;
+}

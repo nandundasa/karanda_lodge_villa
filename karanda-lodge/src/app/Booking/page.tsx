@@ -1,32 +1,47 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import "./booking.css";
 
+type Room = {
+  id: string;
+  name: string;
+  price: number;
+  availability: Record<string, boolean>;
+};
+
 interface CalendarProps {
   title: string;
-  price: string;
   roomType: "family" | "double" | "villa";
-  bookedDates: number[];
-  selectedDates: number[];
-  onDateClick: (day: number) => void;
+  bookedDates: string[];
+  selectedDates: string[];
+  onDateClick: (dateStr: string) => void;
+  currentMonth: Date;
+  onMonthChange: (date: Date) => void;
 }
 
-function Calendar({ title, price, roomType, bookedDates, selectedDates, onDateClick }: CalendarProps) {
+function Calendar({
+  title,
+  roomType,
+  bookedDates,
+  selectedDates,
+  onDateClick,
+  currentMonth,
+  onMonthChange,
+}: CalendarProps) {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
-  const [currentDate, setCurrentDate] = useState(today);
 
   const daysInMonth = new Date(
-    currentDate.getFullYear(),
-    currentDate.getMonth() + 1,
+    currentMonth.getFullYear(),
+    currentMonth.getMonth() + 1,
     0
   ).getDate();
   const firstDay = new Date(
-    currentDate.getFullYear(),
-    currentDate.getMonth(),
+    currentMonth.getFullYear(),
+    currentMonth.getMonth(),
     1
   ).getDay();
 
@@ -46,42 +61,50 @@ function Calendar({ title, price, roomType, bookedDates, selectedDates, onDateCl
   ];
 
   const prevMonth = () => {
-    setCurrentDate(
-      new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1)
+    onMonthChange(
+      new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1, 1)
     );
   };
 
   const nextMonth = () => {
-    setCurrentDate(
-      new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1)
+    onMonthChange(
+      new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 1)
     );
   };
 
-
+  const getDateString = (day: number) => {
+    const year = currentMonth.getFullYear();
+    const month = String(currentMonth.getMonth() + 1).padStart(2, "0");
+    const dayStr = String(day).padStart(2, "0");
+    return `${year}-${month}-${dayStr}`;
+  };
 
   const isPastDate = (day: number) => {
-    const dateToCheck = new Date(currentDate.getFullYear(), currentDate.getMonth(), day);
+    const dateToCheck = new Date(
+      currentMonth.getFullYear(),
+      currentMonth.getMonth(),
+      day
+    );
     return dateToCheck < today;
   };
 
   const getDayClass = (day: number) => {
+    const dateStr = getDateString(day);
     if (isPastDate(day)) return "past";
-    if (selectedDates.includes(day)) return "selected";
-    if (bookedDates.includes(day)) return "booked";
+    if (selectedDates.includes(dateStr)) return "selected";
+    if (bookedDates.includes(dateStr)) return "booked";
     return "available";
   };
 
   return (
     <div className="calendar-card">
-      <h2 className="calendar-title">
-        {title} - {price}
-      </h2>
+      <h2 className="calendar-title">{title}</h2>
       <div className="calendar-header">
         <button onClick={prevMonth} className="nav-btn">
           <ChevronLeft size={20} />
         </button>
         <span className="month-year">
-          {monthNames[currentDate.getMonth()]} {currentDate.getFullYear()}
+          {monthNames[currentMonth.getMonth()]} {currentMonth.getFullYear()}
         </span>
         <button onClick={nextMonth} className="nav-btn">
           <ChevronRight size={20} />
@@ -98,11 +121,12 @@ function Calendar({ title, price, roomType, bookedDates, selectedDates, onDateCl
         ))}
         {Array.from({ length: daysInMonth }).map((_, i) => {
           const day = i + 1;
+          const dateStr = getDateString(day);
           return (
             <div
               key={day}
               className={`day ${getDayClass(day)}`}
-              onClick={() => onDateClick(day)}
+              onClick={() => onDateClick(dateStr)}
             >
               {day}
             </div>
@@ -128,38 +152,83 @@ function Calendar({ title, price, roomType, bookedDates, selectedDates, onDateCl
 }
 
 export default function Booking() {
-  const [familyBooked, setFamilyBooked] = useState<number[]>([15, 16]);
-  const [doubleBooked, setDoubleBooked] = useState<number[]>([21, 24]);
-  const [villaBooked, setVillaBooked] = useState<number[]>([25, 31]);
-  const [familySelected, setFamilySelected] = useState<number[]>([]);
-  const [doubleSelected, setDoubleSelected] = useState<number[]>([]);
-  const [villaSelected, setVillaSelected] = useState<number[]>([]);
+  const [rooms, setRooms] = useState<Room[]>([]);
+  const [familySelected, setFamilySelected] = useState<string[]>([]);
+  const [doubleSelected, setDoubleSelected] = useState<string[]>([]);
+  const [villaSelected, setVillaSelected] = useState<string[]>([]);
+  const [currentMonth, setCurrentMonth] = useState(() => {
+    const today = new Date();
+    return new Date(today.getFullYear(), today.getMonth(), 1);
+  });
 
-  const isPastDate = (day: number, month: number, year: number) => {
+  useEffect(() => {
+    const loadRooms = async () => {
+      const res = await fetch("/api/rooms");
+      const data = await res.json();
+      setRooms(data.rooms || []);
+    };
+    loadRooms();
+  }, []);
+
+  const getBookedDates = (roomId: string): string[] => {
+    const room = rooms.find((r) => r.id === roomId);
+    if (!room || !room.availability) return [];
+    return Object.entries(room.availability)
+      .filter(([_, isBooked]) => isBooked === true)
+      .map(([date]) => date);
+  };
+
+  const familyBooked = getBookedDates("family-room");
+  const doubleBooked = getBookedDates("double-room");
+  const villaBooked = getBookedDates("villa");
+
+  const isPastDate = (dateStr: string) => {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
-    const dateToCheck = new Date(year, month, day);
+    const dateToCheck = new Date(dateStr);
     return dateToCheck < today;
   };
 
-  const handleFamilyClick = (day: number) => {
-    if (isPastDate(day, new Date().getMonth(), new Date().getFullYear()) || familyBooked.includes(day) || villaBooked.includes(day)) return;
+  const handleFamilyClick = (dateStr: string) => {
+    if (
+      isPastDate(dateStr) ||
+      familyBooked.includes(dateStr) ||
+      villaBooked.includes(dateStr)
+    )
+      return;
     setFamilySelected((prev) =>
-      prev.includes(day) ? prev.filter((d) => d !== day) : [...prev, day]
+      prev.includes(dateStr)
+        ? prev.filter((d) => d !== dateStr)
+        : [...prev, dateStr]
     );
   };
 
-  const handleDoubleClick = (day: number) => {
-    if (isPastDate(day, new Date().getMonth(), new Date().getFullYear()) || doubleBooked.includes(day) || villaBooked.includes(day)) return;
+  const handleDoubleClick = (dateStr: string) => {
+    if (
+      isPastDate(dateStr) ||
+      doubleBooked.includes(dateStr) ||
+      villaBooked.includes(dateStr)
+    )
+      return;
     setDoubleSelected((prev) =>
-      prev.includes(day) ? prev.filter((d) => d !== day) : [...prev, day]
+      prev.includes(dateStr)
+        ? prev.filter((d) => d !== dateStr)
+        : [...prev, dateStr]
     );
   };
 
-  const handleVillaClick = (day: number) => {
-    if (isPastDate(day, new Date().getMonth(), new Date().getFullYear()) || familyBooked.includes(day) || doubleBooked.includes(day) || villaBooked.includes(day)) return;
+  const handleVillaClick = (dateStr: string) => {
+    if (
+      isPastDate(dateStr) ||
+      familyBooked.includes(dateStr) ||
+      doubleBooked.includes(dateStr) ||
+      villaBooked.includes(dateStr)
+    )
+      return;
     setVillaSelected((prev) =>
-      prev.includes(day) ? prev.filter((d) => d !== day) : [...prev, day]
+      prev.includes(dateStr)
+        ? prev.filter((d) => d !== dateStr)
+        : [...prev, dateStr]
     );
   };
 
@@ -172,29 +241,32 @@ export default function Booking() {
       <Navbar />
       <main className="booking-page">
         <div className="calendars-container">
-          <Calendar 
-            title="Family Room" 
-            price="$150/night" 
+          <Calendar
+            title="Family Room"
             roomType="family"
             bookedDates={[...familyBooked, ...villaBooked]}
             selectedDates={familySelected}
             onDateClick={handleFamilyClick}
+            currentMonth={currentMonth}
+            onMonthChange={setCurrentMonth}
           />
-          <Calendar 
-            title="Double Room" 
-            price="$120/night" 
+          <Calendar
+            title="Double Room"
             roomType="double"
             bookedDates={[...doubleBooked, ...villaBooked]}
             selectedDates={doubleSelected}
             onDateClick={handleDoubleClick}
+            currentMonth={currentMonth}
+            onMonthChange={setCurrentMonth}
           />
-          <Calendar 
-            title="Entire Villa" 
-            price="$270/night" 
+          <Calendar
+            title="Entire Villa"
             roomType="villa"
             bookedDates={getVillaBookedDates()}
             selectedDates={villaSelected}
             onDateClick={handleVillaClick}
+            currentMonth={currentMonth}
+            onMonthChange={setCurrentMonth}
           />
         </div>
         <div className="villa-info">

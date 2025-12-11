@@ -1,0 +1,19 @@
+{
+  "images": [
+    {
+      "src": "/cover.jpeg",
+      "alt": "Karanda Lodge Exterior",
+      "span": "tall"
+    },
+    {
+      "src": "/IMG_8574.jpeg",
+      "alt": "Dining Area",
+      "span": "tall"
+    },
+    {
+      "src": "/IMG_9537.jpeg",
+      "alt": "Garden View",
+      "span": "normal"
+    }
+  ]
+}

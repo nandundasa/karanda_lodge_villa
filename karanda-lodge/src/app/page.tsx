@@ -19,9 +19,38 @@ import Footer from "./components/Footer";
 export default function Home() {
   const router = useRouter();
   const [currentSlide, setCurrentSlide] = useState(0);
-  const slides = ["/cover.jpeg", "/IMG_8574.jpeg", "/IMG_9537.jpeg"];
+  const [slides, setSlides] = useState<any[]>([]);
 
   useEffect(() => {
+    const loadSlides = () => {
+      fetch("/api/slides?t=" + Date.now())
+        .then((res) => res.json())
+        .then((data) => {
+          if (data.slides && data.slides.length > 0) {
+            // Handle deeply nested URL objects from corrupted database
+            const formattedSlides = data.slides
+              .map((slide: any) => {
+                let url = slide;
+                // Keep drilling down until we get a string
+                while (url && typeof url === "object") {
+                  url = url.url || url.src || url;
+                  if (typeof url === "object" && url.url === url) break;
+                }
+                return typeof url === "string" ? url : null;
+              })
+              .filter((slide: any) => slide && slide.length > 0);
+            setSlides(formattedSlides);
+          }
+        })
+        .catch((err) => console.error("Error loading slides:", err));
+    };
+    loadSlides();
+    const interval = setInterval(loadSlides, 3000);
+    return () => clearInterval(interval);
+  }, []);
+
+  useEffect(() => {
+    if (slides.length === 0) return;
     const timer = setInterval(() => {
       setCurrentSlide((prev) => (prev + 1) % slides.length);
     }, 5000);
@@ -33,13 +62,14 @@ export default function Home() {
 
       <main className="hero" id="home">
         <div className="slideshow">
-          {slides.map((slide, index) => (
-            <div
-              key={slide}
-              className={`slide ${index === currentSlide ? "active" : ""}`}
-              style={{ backgroundImage: `url(${slide})` }}
-            />
-          ))}
+          {slides.length > 0 &&
+            slides.map((slide, index) => (
+              <div
+                key={index}
+                className={`slide ${index === currentSlide ? "active" : ""}`}
+                style={{ backgroundImage: `url(${slide})` }}
+              />
+            ))}
         </div>
         <div className="hero-content">
           <div className="rating-badge">
