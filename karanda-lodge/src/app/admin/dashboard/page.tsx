@@ -105,19 +105,69 @@ export default function Dashboard() {
   };
 
   const toggleAvailability = (roomId: string, date: string) => {
-    setRooms(
-      rooms.map((room) =>
-        room.id === roomId
-          ? {
-              ...room,
+    setRooms((prevRooms) => {
+      const room = prevRooms.find((r) => r.id === roomId);
+      const newBookedState = !room?.availability[date];
+
+      return prevRooms.map((r) => {
+        // If toggling villa, update all three rooms
+        if (roomId === "villa") {
+          if (
+            r.id === "villa" ||
+            r.id === "family-room" ||
+            r.id === "double-room"
+          ) {
+            return {
+              ...r,
               availability: {
-                ...room.availability,
-                [date]: !room.availability[date],
+                ...r.availability,
+                [date]: newBookedState,
               },
-            }
-          : room
-      )
-    );
+            };
+          }
+        }
+        // If toggling family or double room
+        else if (roomId === "family-room" || roomId === "double-room") {
+          // Update the clicked room
+          if (r.id === roomId) {
+            return {
+              ...r,
+              availability: {
+                ...r.availability,
+                [date]: newBookedState,
+              },
+            };
+          }
+          // Update villa based on both rooms' status
+          if (r.id === "villa") {
+            let villaBooked = false;
+            const familyBooked =
+              roomId === "family-room"
+                ? newBookedState
+                : prevRooms.find((rm) => rm.id === "family-room")?.availability[
+                    date
+                  ] || false;
+            const doubleBooked =
+              roomId === "double-room"
+                ? newBookedState
+                : prevRooms.find((rm) => rm.id === "double-room")?.availability[
+                    date
+                  ] || false;
+
+            villaBooked = familyBooked || doubleBooked;
+
+            return {
+              ...r,
+              availability: {
+                ...r.availability,
+                [date]: villaBooked,
+              },
+            };
+          }
+        }
+        return r;
+      });
+    });
   };
 
   const saveRooms = async () => {

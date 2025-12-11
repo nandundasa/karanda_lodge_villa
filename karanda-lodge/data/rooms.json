@@ -31,7 +31,10 @@
         "/IMG_9537.jpeg"
       ],
       "availability": {
-        "2025-12-13": true
+        "2025-12-13": true,
+        "2025-12-18": true,
+        "2025-12-20": true,
+        "2025-12-19": true
       }
     },
     {
@@ -46,7 +49,11 @@
         "/IMG_8574.jpeg",
         "/IMG_9537.jpeg"
       ],
-      "availability": {}
+      "availability": {
+        "2025-12-18": true,
+        "2025-12-20": true,
+        "2025-12-19": true
+      }
     }
   ]
 }
