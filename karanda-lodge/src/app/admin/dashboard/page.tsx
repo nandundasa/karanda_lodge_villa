@@ -368,14 +368,30 @@ export default function Dashboard() {
                     // Parse date parts to avoid timezone issues
                     const [year, month, day] = date.split("-").map(Number);
 
+                    // Check if date is in the past
+                    const today = new Date();
+                    today.setHours(0, 0, 0, 0);
+                    const dateObj = new Date(year, month - 1, day);
+                    const isPast = dateObj < today;
+
                     return (
                       <div
                         key={date}
-                        className={`day ${isBooked ? "booked" : "available"}`}
-                        onClick={() => toggleAvailability(selectedRoom, date)}
+                        className={`day ${isBooked ? "booked" : "available"} ${
+                          isPast ? "past" : ""
+                        }`}
+                        onClick={() =>
+                          !isPast && toggleAvailability(selectedRoom, date)
+                        }
+                        style={{
+                          cursor: isPast ? "not-allowed" : "pointer",
+                          opacity: isPast ? 0.5 : 1,
+                        }}
                       >
                         <span className="day-number">{day}</span>
-                        <small>{isBooked ? "Booked" : "Available"}</small>
+                        <small>
+                          {isBooked ? "Booked" : isPast ? "Past" : "Available"}
+                        </small>
                       </div>
                     );
                   })}
