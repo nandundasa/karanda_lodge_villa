@@ -3,7 +3,7 @@
 ## Access the Admin Panel
 
 1. Navigate to: `http://localhost:3000/admin`
-2. Default password: `admin123`
+2. Default password: `KarandaLodge2002`
 
 ## Features
 

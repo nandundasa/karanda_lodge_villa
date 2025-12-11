@@ -9,7 +9,7 @@ export default function AdminLogin() {
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
-    if (password === "admin123") {
+    if (password === "KarandaLodge2002") {
       sessionStorage.setItem("adminAuth", "true");
       router.push("/admin/dashboard");
     } else {
