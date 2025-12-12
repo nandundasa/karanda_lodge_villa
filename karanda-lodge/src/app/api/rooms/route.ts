@@ -49,6 +49,7 @@ export async function POST(request: Request) {
               beds: room.beds,
               description: room.description,
               images: room.images,
+              cardImage: room.cardImage,
               availability: room.availability || {},
               updatedAt: new Date(),
             },

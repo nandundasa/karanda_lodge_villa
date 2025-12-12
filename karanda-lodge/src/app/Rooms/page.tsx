@@ -3,7 +3,6 @@ import {
   Users,
   SoapDispenserDroplet,
   Car,
-  Droplet,
   Wind,
   Coffee,
   ArchiveRestore,
@@ -15,7 +14,6 @@ import {
   Utensils,
   Bath,
   Sofa,
-  Wifi,
   Home,
 } from "lucide-react";
 import Image from "next/image";
@@ -31,6 +29,7 @@ interface Room {
   description: string;
   price: number;
   images?: string[];
+  cardImage?: string;
   guests?: string | number;
   capacity?: number;
   beds?: string | number;
@@ -59,6 +58,7 @@ function RoomSlideshow({ images, alt }: { images: string[]; alt: string }) {
         width={700}
         height={500}
         className="room-main-image"
+        unoptimized
       />
       {images.length > 1 && (
         <>
@@ -260,14 +260,51 @@ export default function Rooms() {
           rooms.map((room) => (
             <div key={room._id || room.id} className="room-detail">
               <div className="room-image-container">
-                <RoomSlideshow
-                  images={
-                    room.images && room.images.length > 0
-                      ? room.images
-                      : ["/placeholder-room.png"]
-                  }
-                  alt={room.name}
-                />
+                {room.cardImage && (
+                  <div className="room-card-image">
+                    <Image
+                      src={room.cardImage}
+                      alt={`${room.name} - Card Image`}
+                      width={400}
+                      height={300}
+                      className="card-image"
+                      priority
+                      unoptimized
+                    />
+                  </div>
+                )}
+                <div className="room-main-container">
+                  <RoomSlideshow
+                    images={
+                      room.images && room.images.length > 0
+                        ? room.images
+                        : ["/placeholder-room.png"]
+                    }
+                    alt={room.name}
+                  />
+                </div>
+                {room.images && room.images.length > 1 && (
+                  <div className="room-thumbnails">
+                    {room.images.map((image, index) => (
+                      <div
+                        key={index}
+                        className="thumbnail"
+                        onClick={() => {
+                          // This would require state management in RoomSlideshow
+                          // For now, this is a visual indicator
+                        }}
+                      >
+                        <Image
+                          src={image}
+                          alt={`Thumbnail ${index + 1}`}
+                          width={80}
+                          height={80}
+                          unoptimized
+                        />
+                      </div>
+                    ))}
+                  </div>
+                )}
                 <span className="price-tag">
                   {room.name === "Villa"
                     ? `Starting from Rs.${room.price}/night`
