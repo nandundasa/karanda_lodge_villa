@@ -4,11 +4,12 @@ import {
   Star,
   ExternalLink,
   Users,
-  Wifi,
   Car,
-  Droplet,
   Wind,
   ArrowRight,
+  Coffee,
+  ArchiveRestore,
+  SoapDispenserDroplet,
 } from "lucide-react";
 import Image from "next/image";
 import { useEffect, useState } from "react";
@@ -127,16 +128,19 @@ export default function Home() {
                 </div>
                 <div className="room-amenities">
                   <span className="amenity">
-                    <Wind size={14} /> AC
+                    <Wind size={14} /> Air Conditioning
                   </span>
                   <span className="amenity">
-                    <Wifi size={14} /> WiFi
+                    <SoapDispenserDroplet size={14} /> Soap
                   </span>
                   <span className="amenity">
-                    <Car size={14} /> Parking
+                    <Car size={14} /> Free Parking
                   </span>
                   <span className="amenity">
-                    <Droplet size={14} /> Hot Water
+                    <Coffee size={14} /> Kettle
+                  </span>
+                  <span className="amenity">
+                    <ArchiveRestore size={14} /> Cupboard
                   </span>
                 </div>
                 <button
@@ -169,16 +173,19 @@ export default function Home() {
                 </div>
                 <div className="room-amenities">
                   <span className="amenity">
-                    <Wind size={14} /> AC
+                    <Wind size={14} /> Air Conditioning
                   </span>
                   <span className="amenity">
-                    <Wifi size={14} /> WiFi
+                    <SoapDispenserDroplet size={14} /> Soap
                   </span>
                   <span className="amenity">
-                    <Car size={14} /> Parking
+                    <Car size={14} /> Free Parking
                   </span>
                   <span className="amenity">
-                    <Droplet size={14} /> Hot Water
+                    <Coffee size={14} /> Kettle
+                  </span>
+                  <span className="amenity">
+                    <ArchiveRestore size={14} /> Cupboard
                   </span>
                 </div>
                 <button
