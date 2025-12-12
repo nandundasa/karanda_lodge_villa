@@ -58,7 +58,6 @@ function RoomSlideshow({ images, alt }: { images: string[]; alt: string }) {
         width={700}
         height={500}
         className="room-main-image"
-        unoptimized
       />
       {images.length > 1 && (
         <>
@@ -269,7 +268,6 @@ export default function Rooms() {
                       height={300}
                       className="card-image"
                       priority
-                      unoptimized
                     />
                   </div>
                 )}
@@ -299,7 +297,6 @@ export default function Rooms() {
                           alt={`Thumbnail ${index + 1}`}
                           width={80}
                           height={80}
-                          unoptimized
                         />
                       </div>
                     ))}

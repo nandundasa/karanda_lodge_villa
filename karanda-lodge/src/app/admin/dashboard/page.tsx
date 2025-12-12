@@ -8,7 +8,13 @@ import "./dashboard.css";
 type Room = {
   id: string;
   name: string;
-  price: number;
+  price: number | string;
+  capacity?: number;
+  guests?: string;
+  beds?: string;
+  description?: string;
+  images?: string[];
+  cardImage?: string;
   availability: Record<string, boolean>;
 };
 
@@ -69,7 +75,14 @@ export default function Dashboard() {
       } else {
         setGallery([]);
       }
-      setRooms(roomsData.rooms || []);
+      // Ensure all rooms have availability object
+      const roomsWithAvailability = (roomsData.rooms || []).map(
+        (room: Room) => ({
+          ...room,
+          availability: room.availability || {},
+        })
+      );
+      setRooms(roomsWithAvailability);
     } catch (error) {
       console.error("Error loading data:", error);
       setGallery([]);
