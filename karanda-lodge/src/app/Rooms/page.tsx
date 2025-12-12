@@ -1,16 +1,22 @@
 "use client";
 import {
   Users,
-  Wifi,
+  SoapDispenserDroplet,
   Car,
   Droplet,
   Wind,
   Coffee,
-  Tv,
+  ArchiveRestore,
   Bed,
   ChevronLeft,
   ChevronRight,
   Calendar,
+  Tv,
+  Utensils,
+  Bath,
+  Sofa,
+  Wifi,
+  Home,
 } from "lucide-react";
 import Image from "next/image";
 import { useState, useEffect } from "react";
@@ -282,26 +288,59 @@ export default function Rooms() {
                   </div>
                 </div>
                 <div className="room-features">
-                  <h3>Room Features</h3>
+                  <h3>
+                    {room.id === "villa" ? "Villa Features" : "Room Features"}
+                  </h3>
                   <div className="features-grid">
-                    <div className="feature">
-                      <Wind size={18} /> Air Conditioning
-                    </div>
-                    <div className="feature">
-                      <Wifi size={18} /> Free WiFi
-                    </div>
-                    <div className="feature">
-                      <Car size={18} /> Free Parking
-                    </div>
-                    <div className="feature">
-                      <Droplet size={18} /> Hot Water
-                    </div>
-                    <div className="feature">
-                      <Coffee size={18} /> Coffee Maker
-                    </div>
-                    <div className="feature">
-                      <Tv size={18} /> Smart TV
-                    </div>
+                    {room.id === "villa" ? (
+                      <>
+                        <div className="feature">
+                          <Home size={18} /> 2 Bedrooms
+                        </div>
+                        <div className="feature">
+                          <Bath size={18} /> 2 Bathrooms
+                        </div>
+                        <div className="feature">
+                          <Utensils size={18} /> Full Kitchen
+                        </div>
+                        <div className="feature">
+                          <Sofa size={18} /> Living Area
+                        </div>
+                        <div className="feature">
+                          <Tv size={18} /> Smart TV
+                        </div>
+                        <div className="feature">
+                          <Wind size={18} /> Air Conditioning
+                        </div>
+                        <div className="feature">
+                          <Car size={18} /> Free Parking
+                        </div>
+                        <div className="feature">
+                          <Coffee size={18} /> Kettle
+                        </div>
+                        <div className="feature">
+                          <ArchiveRestore size={18} /> Cupboards
+                        </div>
+                      </>
+                    ) : (
+                      <>
+                        <div className="feature">
+                          <Wind size={18} /> Air Conditioning
+                        </div>
+                        <div className="feature">
+                          <SoapDispenserDroplet size={18} /> Soap
+                        </div>
+                        <div className="feature">
+                          <Car size={18} /> Free Parking
+                        </div>
+                        <div className="feature">
+                          <Coffee size={18} /> Kettle
+                        </div>
+                        <div className="feature">
+                          <ArchiveRestore size={18} /> Cupboard
+                        </div>
+                      </>
+                    )}
                   </div>
                 </div>
                 <button
