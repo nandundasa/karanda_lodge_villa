@@ -4,10 +4,10 @@ import { connectToDatabase } from "@/lib/mongodb";
 export async function GET() {
   try {
     const db = await connectToDatabase();
-    const allowedRooms = ["Double Room", "Family Room", "Villa"];
+    const allowedRoomIds = ["family-room", "double-room", "villa"];
     const rooms = await db
       .collection("rooms")
-      .find({ name: { $in: allowedRooms } })
+      .find({ id: { $in: allowedRoomIds } })
       .sort({ id: 1 })
       .toArray();
 
