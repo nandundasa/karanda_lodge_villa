@@ -1,13 +1,17 @@
 import { NextResponse } from "next/server";
 import { connectToDatabase } from "@/lib/mongodb";
 
+// Disable caching for this API route
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 export async function GET() {
   try {
     const db = await connectToDatabase();
-    const allowedRooms = ["Double Room", "Family Room", "Villa"];
+    const allowedRoomIds = ["family-room", "double-room", "villa"];
     const rooms = await db
       .collection("rooms")
-      .find({ name: { $in: allowedRooms } })
+      .find({ id: { $in: allowedRoomIds } })
       .sort({ id: 1 })
       .toArray();
 
@@ -36,22 +40,39 @@ export async function POST(request: Request) {
 
     if (roomsArray.length > 0) {
       for (const room of roomsArray) {
-        console.log("Updating room:", room.id, room.name);
+        console.log(
+          "Updating room:",
+          room.id,
+          "Availability:",
+          JSON.stringify(room.availability)
+        );
+
+        // Build update object only with fields that exist
+        const updateFields: Record<string, unknown> = {
+          updatedAt: new Date(),
+        };
+
+        // Always update availability if present
+        if (room.availability !== undefined) {
+          updateFields.availability = room.availability || {};
+        }
+
+        // Only update other fields if they are provided
+        if (room.name !== undefined) updateFields.name = room.name;
+        if (room.price !== undefined) updateFields.price = room.price;
+        if (room.capacity !== undefined) updateFields.capacity = room.capacity;
+        if (room.guests !== undefined) updateFields.guests = room.guests;
+        if (room.beds !== undefined) updateFields.beds = room.beds;
+        if (room.description !== undefined)
+          updateFields.description = room.description;
+        if (room.images !== undefined) updateFields.images = room.images;
+        if (room.cardImage !== undefined)
+          updateFields.cardImage = room.cardImage;
+
         const result = await db.collection("rooms").updateOne(
           { id: room.id },
           {
-            $set: {
-              id: room.id,
-              name: room.name,
-              price: room.price,
-              capacity: room.capacity,
-              guests: room.guests,
-              beds: room.beds,
-              description: room.description,
-              images: room.images,
-              availability: room.availability || {},
-              updatedAt: new Date(),
-            },
+            $set: updateFields,
           },
           { upsert: true }
         );

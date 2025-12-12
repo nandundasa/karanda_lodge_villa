@@ -1,16 +1,20 @@
 "use client";
 import {
   Users,
-  Wifi,
+  SoapDispenserDroplet,
   Car,
-  Droplet,
   Wind,
   Coffee,
-  Tv,
+  ArchiveRestore,
   Bed,
   ChevronLeft,
   ChevronRight,
   Calendar,
+  Tv,
+  Utensils,
+  Bath,
+  Sofa,
+  Home,
 } from "lucide-react";
 import Image from "next/image";
 import { useState, useEffect } from "react";
@@ -25,6 +29,7 @@ interface Room {
   description: string;
   price: number;
   images?: string[];
+  cardImage?: string;
   guests?: string | number;
   capacity?: number;
   beds?: string | number;
@@ -50,9 +55,10 @@ function RoomSlideshow({ images, alt }: { images: string[]; alt: string }) {
       <Image
         src={images[currentIndex]}
         alt={`${alt} - Image ${currentIndex + 1}`}
-        width={700}
-        height={500}
+        fill
+        sizes="(max-width: 968px) 100vw, 50vw"
         className="room-main-image"
+        priority
       />
       {images.length > 1 && (
         <>
@@ -254,15 +260,54 @@ export default function Rooms() {
           rooms.map((room) => (
             <div key={room._id || room.id} className="room-detail">
               <div className="room-image-container">
-                <RoomSlideshow
-                  images={
-                    room.images && room.images.length > 0
-                      ? room.images
-                      : ["/placeholder-room.png"]
-                  }
-                  alt={room.name}
-                />
-                <span className="price-tag">Rs.{room.price}/night</span>
+                {room.cardImage && (
+                  <div className="room-card-image">
+                    <Image
+                      src={room.cardImage}
+                      alt={`${room.name} - Card Image`}
+                      fill
+                      sizes="(max-width: 968px) 100vw, 50vw"
+                      className="card-image"
+                      priority
+                    />
+                  </div>
+                )}
+                <div className="room-main-container">
+                  <RoomSlideshow
+                    images={
+                      room.images && room.images.length > 0
+                        ? room.images
+                        : ["/placeholder-room.png"]
+                    }
+                    alt={room.name}
+                  />
+                </div>
+                {room.images && room.images.length > 1 && (
+                  <div className="room-thumbnails">
+                    {room.images.map((image, index) => (
+                      <div
+                        key={index}
+                        className="thumbnail"
+                        onClick={() => {
+                          // This would require state management in RoomSlideshow
+                          // For now, this is a visual indicator
+                        }}
+                      >
+                        <Image
+                          src={image}
+                          alt={`Thumbnail ${index + 1}`}
+                          width={80}
+                          height={80}
+                        />
+                      </div>
+                    ))}
+                  </div>
+                )}
+                <span className="price-tag">
+                  {room.name === "Villa"
+                    ? `Starting from Rs.${room.price}/night`
+                    : `Rs.${room.price}/night`}
+                </span>
               </div>
               <div className="room-info">
                 <h1 className="room-title">{room.name}</h1>
@@ -278,26 +323,59 @@ export default function Rooms() {
                   </div>
                 </div>
                 <div className="room-features">
-                  <h3>Room Features</h3>
+                  <h3>
+                    {room.id === "villa" ? "Villa Features" : "Room Features"}
+                  </h3>
                   <div className="features-grid">
-                    <div className="feature">
-                      <Wind size={18} /> Air Conditioning
-                    </div>
-                    <div className="feature">
-                      <Wifi size={18} /> Free WiFi
-                    </div>
-                    <div className="feature">
-                      <Car size={18} /> Free Parking
-                    </div>
-                    <div className="feature">
-                      <Droplet size={18} /> Hot Water
-                    </div>
-                    <div className="feature">
-                      <Coffee size={18} /> Coffee Maker
-                    </div>
-                    <div className="feature">
-                      <Tv size={18} /> Smart TV
-                    </div>
+                    {room.id === "villa" ? (
+                      <>
+                        <div className="feature">
+                          <Home size={18} /> 2 Bedrooms
+                        </div>
+                        <div className="feature">
+                          <Bath size={18} /> 2 Bathrooms
+                        </div>
+                        <div className="feature">
+                          <Utensils size={18} /> Full Kitchen
+                        </div>
+                        <div className="feature">
+                          <Sofa size={18} /> Living Area
+                        </div>
+                        <div className="feature">
+                          <Tv size={18} /> Smart TV
+                        </div>
+                        <div className="feature">
+                          <Wind size={18} /> Air Conditioning
+                        </div>
+                        <div className="feature">
+                          <Car size={18} /> Free Parking
+                        </div>
+                        <div className="feature">
+                          <Coffee size={18} /> Kettle
+                        </div>
+                        <div className="feature">
+                          <ArchiveRestore size={18} /> Cupboards
+                        </div>
+                      </>
+                    ) : (
+                      <>
+                        <div className="feature">
+                          <Wind size={18} /> Air Conditioning
+                        </div>
+                        <div className="feature">
+                          <SoapDispenserDroplet size={18} /> Soap
+                        </div>
+                        <div className="feature">
+                          <Car size={18} /> Free Parking
+                        </div>
+                        <div className="feature">
+                          <Coffee size={18} /> Kettle
+                        </div>
+                        <div className="feature">
+                          <ArchiveRestore size={18} /> Cupboard
+                        </div>
+                      </>
+                    )}
                   </div>
                 </div>
                 <button
