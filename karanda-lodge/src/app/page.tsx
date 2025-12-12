@@ -114,7 +114,7 @@ export default function Home() {
                   width={500}
                   height={300}
                 />
-                <span className="price-badge">Rs.7500/night</span>
+                <span className="price-badge">Rs.6500-Rs.7500/night</span>
               </div>
               <div className="room-content">
                 <h3 className="room-name">Family Room</h3>

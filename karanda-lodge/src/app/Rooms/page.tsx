@@ -262,7 +262,11 @@ export default function Rooms() {
                   }
                   alt={room.name}
                 />
-                <span className="price-tag">Rs.{room.price}/night</span>
+                <span className="price-tag">
+                  {room.name === "Villa"
+                    ? `Starting from Rs.${room.price}/night`
+                    : `Rs.${room.price}/night`}
+                </span>
               </div>
               <div className="room-info">
                 <h1 className="room-title">{room.name}</h1>

@@ -27,7 +27,7 @@ export async function GET(request: Request) {
       {
         id: "family-room",
         name: "Family Room",
-        price: 7500,
+        price: "6500-7500",
         capacity: 5,
         guests: "4-5 guests",
         beds: "1 King + 1 Queen",
