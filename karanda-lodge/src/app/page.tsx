@@ -110,7 +110,7 @@ export default function Home() {
             <div className="room-card">
               <div className="room-image">
                 <Image
-                  src="/cover.jpeg"
+                  src="/IMG_9527.jpeg"
                   alt="Family Room"
                   width={500}
                   height={300}
@@ -155,7 +155,7 @@ export default function Home() {
             <div className="room-card">
               <div className="room-image">
                 <Image
-                  src="/IMG_8574.jpeg"
+                  src="/IMG_2255.jpeg"
                   alt="Double Room"
                   width={500}
                   height={300}
