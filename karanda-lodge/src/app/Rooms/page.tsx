@@ -55,9 +55,10 @@ function RoomSlideshow({ images, alt }: { images: string[]; alt: string }) {
       <Image
         src={images[currentIndex]}
         alt={`${alt} - Image ${currentIndex + 1}`}
-        width={700}
-        height={500}
+        fill
+        sizes="(max-width: 968px) 100vw, 50vw"
         className="room-main-image"
+        priority
       />
       {images.length > 1 && (
         <>
@@ -264,8 +265,8 @@ export default function Rooms() {
                     <Image
                       src={room.cardImage}
                       alt={`${room.name} - Card Image`}
-                      width={400}
-                      height={300}
+                      fill
+                      sizes="(max-width: 968px) 100vw, 50vw"
                       className="card-image"
                       priority
                     />

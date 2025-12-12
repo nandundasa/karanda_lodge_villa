@@ -48,6 +48,7 @@
   border-radius: 8px;
   overflow: hidden;
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+  flex-shrink: 0;
 }
 
 .card-image {
@@ -113,7 +114,8 @@
 .slideshow-container {
   position: relative;
   width: 100%;
-  height: 100%;
+  aspect-ratio: 7 / 5;
+  overflow: hidden;
 }
 
 .slide-btn {
@@ -181,8 +183,12 @@
 }
 
 .room-main-image {
+  position: absolute;
+  top: 0;
+  left: 0;
   width: 100%;
-  height: auto;
+  height: 100%;
+  object-fit: cover;
   display: block;
 }
 
