@@ -15,6 +15,7 @@ import {
   Bath,
   Sofa,
   Home,
+  Flame,
 } from "lucide-react";
 import Image from "next/image";
 import { useState, useEffect } from "react";
@@ -212,6 +213,29 @@ export default function Rooms() {
     return () => clearInterval(interval);
   }, []);
 
+  // Scroll to hash element after rooms are loaded
+  useEffect(() => {
+    if (rooms.length > 0 && window.location.hash) {
+      const id = window.location.hash.substring(1);
+      const element = document.getElementById(id);
+      if (element) {
+        setTimeout(() => {
+          const navbarHeight = 80; // Account for fixed navbar
+          const elementPosition = element.getBoundingClientRect().top + window.scrollY;
+          window.scrollTo({
+            top: elementPosition - navbarHeight,
+            behavior: "smooth"
+          });
+          // Add highlight animation
+          element.classList.add("highlight");
+          setTimeout(() => {
+            element.classList.remove("highlight");
+          }, 2000);
+        }, 100);
+      }
+    }
+  }, [rooms]);
+
   // Get combined availability for Villa (includes Family Room + Double Room bookings)
   const getVillaAvailability = (): Record<string, boolean> => {
     const familyRoom = rooms.find((r) => r.id === "family-room");
@@ -258,7 +282,7 @@ export default function Rooms() {
       <main className="rooms-page">
         {rooms.length > 0 ? (
           rooms.map((room) => (
-            <div key={room._id || room.id} className="room-detail">
+            <div key={room._id || room.id} id={room.id} className="room-detail">
               <div className="room-image-container">
                 {room.cardImage && (
                   <div className="room-card-image">
@@ -356,6 +380,9 @@ export default function Rooms() {
                         <div className="feature">
                           <ArchiveRestore size={18} /> Cupboards
                         </div>
+                        <div className="feature">
+                          <Flame size={18} /> Hot Water
+                        </div>
                       </>
                     ) : (
                       <>
@@ -373,6 +400,9 @@ export default function Rooms() {
                         </div>
                         <div className="feature">
                           <ArchiveRestore size={18} /> Cupboard
+                        </div>
+                        <div className="feature">
+                          <Flame size={18} /> Hot Water
                         </div>
                       </>
                     )}

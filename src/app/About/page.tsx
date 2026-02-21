@@ -165,7 +165,7 @@ export default function About() {
                 </p>
                 <div className="testimonial-author">
                   <h4>Sayuri</h4>
-                  <p>Europe</p>
+                  <p>Finland</p>
                 </div>
                 <p className="testimonial-date">September 2025</p>
               </div>

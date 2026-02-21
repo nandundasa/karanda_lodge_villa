@@ -10,6 +10,12 @@ import {
   Coffee,
   ArchiveRestore,
   SoapDispenserDroplet,
+  Flame,
+  Home as HomeIcon,
+  Bath,
+  Utensils,
+  Sofa,
+  Tv,
 } from "lucide-react";
 import Image from "next/image";
 import { useEffect, useState } from "react";
@@ -101,6 +107,69 @@ export default function Home() {
         </div>
       </main>
 
+      <section className="villa-section">
+        <div className="villa-container">
+          <h2 className="villa-title">Book the Entire Villa</h2>
+          <p className="villa-subtitle">Experience complete privacy and luxury</p>
+          
+          <div className="villa-card">
+            <div className="villa-image">
+              <Image
+                src="/IMG_0922.jpeg"
+                alt="Entire Villa"
+                width={800}
+                height={500}
+              />
+              <span className="price-badge">Starting from Rs.17,000/night</span>
+            </div>
+            <div className="villa-content">
+              <h3 className="villa-name">Entire Villa</h3>
+              <p className="villa-description">
+                Complete privacy with both rooms and all amenities. The entire villa includes 
+                the Family Room and Double Room, plus exclusive access to all common areas, 
+                kitchen, and outdoor spaces.
+              </p>
+              <div className="villa-guests">
+                <Users size={16} />
+                <span>7-9 guests</span>
+              </div>
+              <div className="villa-amenities">
+                <span className="amenity">
+                  <HomeIcon size={14} /> 2 Bedrooms
+                </span>
+                <span className="amenity">
+                  <Bath size={14} /> 2 Bathrooms
+                </span>
+                <span className="amenity">
+                  <Utensils size={14} /> Full Kitchen
+                </span>
+                <span className="amenity">
+                  <Sofa size={14} /> Living Area
+                </span>
+                <span className="amenity">
+                  <Tv size={14} /> Smart TV
+                </span>
+                <span className="amenity">
+                  <Wind size={14} /> Air Conditioning
+                </span>
+                <span className="amenity">
+                  <Car size={14} /> Free Parking
+                </span>
+                <span className="amenity">
+                  <Flame size={14} /> Hot Water
+                </span>
+              </div>
+              <button
+                className="view-details-btn"
+                onClick={() => router.push("/Rooms#villa")}
+              >
+                View Details <ArrowRight size={20} />
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
       <section className="rooms-section">
         <div className="rooms-container">
           <h2 className="rooms-title">Our Premium Rooms</h2>
@@ -115,7 +184,7 @@ export default function Home() {
                   width={500}
                   height={300}
                 />
-                <span className="price-badge">Rs.6500-Rs.7500/night</span>
+                <span className="price-badge">Rs.6,500-Rs.7,500/night</span>
               </div>
               <div className="room-content">
                 <h3 className="room-name">Family Room</h3>
@@ -142,10 +211,13 @@ export default function Home() {
                   <span className="amenity">
                     <ArchiveRestore size={14} /> Cupboard
                   </span>
+                  <span className="amenity">
+                    <Flame size={14} /> Hot Water
+                  </span>
                 </div>
                 <button
                   className="view-details-btn"
-                  onClick={() => router.push("/Rooms")}
+                  onClick={() => router.push("/Rooms#family-room")}
                 >
                   View Details <ArrowRight size={20} />
                 </button>
@@ -160,7 +232,7 @@ export default function Home() {
                   width={500}
                   height={300}
                 />
-                <span className="price-badge">Rs.5500/night</span>
+                <span className="price-badge">Rs.5,500/night</span>
               </div>
               <div className="room-content">
                 <h3 className="room-name">Double Room</h3>
@@ -187,10 +259,13 @@ export default function Home() {
                   <span className="amenity">
                     <ArchiveRestore size={14} /> Cupboard
                   </span>
+                  <span className="amenity">
+                    <Flame size={14} /> Hot Water
+                  </span>
                 </div>
                 <button
                   className="view-details-btn"
-                  onClick={() => router.push("/Rooms")}
+                  onClick={() => router.push("/Rooms#double-room")}
                 >
                   View Details <ArrowRight size={20} />
                 </button>

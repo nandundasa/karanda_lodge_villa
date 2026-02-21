@@ -24,6 +24,29 @@
   transform: translateY(-4px);
 }
 
+/* Highlight animation for scroll target */
+.room-detail.highlight {
+  animation: highlightPulse 2s ease-out;
+}
+
+@keyframes highlightPulse {
+  0% {
+    border-color: #4a7c59;
+    box-shadow: 0 0 0 0 rgba(74, 124, 89, 0.7);
+    background: #e8f5e9;
+  }
+  50% {
+    border-color: #5a9d6a;
+    box-shadow: 0 0 20px 10px rgba(74, 124, 89, 0.3);
+    background: #e8f5e9;
+  }
+  100% {
+    border-color: #e0e0e0;
+    box-shadow: 0 0 0 0 rgba(74, 124, 89, 0);
+    background: #fafafa;
+  }
+}
+
 .room-image-container {
   position: relative;
   border-radius: 12px;

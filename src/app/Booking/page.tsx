@@ -273,10 +273,7 @@ export default function Booking() {
           <div className="info-icon">🏡</div>
           <h3>Book the Entire Villa</h3>
           <p>
-            The entire villa includes both the Family Room and Double Room. When
-            you book the villa, both rooms are reserved exclusively for you. If
-            either room is already booked, the entire villa cannot be reserved
-            for that date.
+            The entire villa includes both the Family Room and the Double Room. When you book the villa, the entire property is reserved exclusively for you, including both rooms and all common areas. If either room is already booked, the entire villa cannot be reserved for that date.
           </p>
         </div>
       </main>
