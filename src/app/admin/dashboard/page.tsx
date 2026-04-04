@@ -36,6 +36,9 @@ export default function Dashboard() {
       return;
     }
     loadData();
+    // Refresh data every 30 seconds instead of 3 seconds
+    const interval = setInterval(loadData, 30000);
+    return () => clearInterval(interval);
   }, []);
 
   const loadData = async () => {
