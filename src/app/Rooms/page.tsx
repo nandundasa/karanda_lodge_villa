@@ -329,8 +329,10 @@ export default function Rooms() {
                 )}
                 <span className="price-tag">
                   {room.name === "Villa"
-                    ? `Starting from Rs.${room.price}/night`
-                    : `Rs.${room.price}/night`}
+                    ? `Starting from Rs.${room.price.toLocaleString()}/night`
+                    : room.name === "Family Room"
+                    ? `Rs.${room.price}/night`
+                    : `Rs.${room.price.toLocaleString()}/night`}
                 </span>
               </div>
               <div className="room-info">

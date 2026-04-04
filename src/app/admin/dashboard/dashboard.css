@@ -234,11 +234,17 @@ input[type="file"] {
   justify-content: center;
   background: white;
   transition: transform 0.1s;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
 }
 
-.day:hover {
+.day:hover:not(.past):not(.empty) {
     transform: translateY(-2px);
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.day:active:not(.past):not(.empty) {
+    transform: scale(0.95);
 }
 
 .day-name {
@@ -305,4 +311,268 @@ input[type="file"] {
   border: none;
   cursor: default;
   box-shadow: none;
+}
+
+.day.past {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.prices-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  margin-top: 1.5rem;
+}
+
+.price-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.5rem;
+  background: #f9f9f9;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  transition: all 0.2s;
+}
+
+.price-item:hover {
+  border-color: #2E7D32;
+  box-shadow: 0 2px 8px rgba(46, 125, 50, 0.1);
+}
+
+.price-info h3 {
+  margin: 0 0 0.5rem 0;
+  color: #2E7D32;
+  font-size: 1.25rem;
+}
+
+.current-price {
+  margin: 0;
+  color: #666;
+  font-size: 0.95rem;
+}
+
+.price-input-group {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.price-input-group label {
+  font-weight: 500;
+  color: #333;
+}
+
+.price-input-group input {
+  padding: 0.75rem 1rem;
+  border: 2px solid #e0e0e0;
+  border-radius: 6px;
+  font-size: 1rem;
+  width: 200px;
+  transition: border-color 0.2s;
+}
+
+.price-input-group input:focus {
+  outline: none;
+  border-color: #2E7D32;
+}
+
+/* Mobile Responsive Styles */
+@media (max-width: 768px) {
+  .dashboard-header {
+    padding: 1rem;
+    flex-direction: column;
+    gap: 1rem;
+    text-align: center;
+  }
+
+  .dashboard-header h1 {
+    font-size: 1.25rem;
+  }
+
+  .dashboard-content {
+    padding: 1rem;
+  }
+
+  .tabs {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .tab {
+    width: 100%;
+    text-align: center;
+  }
+
+  .section {
+    padding: 1rem;
+  }
+
+  .section h2 {
+    font-size: 1.25rem;
+  }
+
+  .upload-area {
+    padding: 1.5rem;
+  }
+
+  .image-grid {
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    gap: 0.75rem;
+  }
+
+  .month-navigation {
+    flex-direction: column;
+    gap: 1rem;
+    padding: 0.75rem;
+  }
+
+  .current-month {
+    font-size: 1.1rem;
+  }
+
+  .nav-btn {
+    width: 100%;
+    padding: 0.75rem;
+  }
+
+  .calendar-header {
+    gap: 0.25rem;
+  }
+
+  .weekday-label {
+    font-size: 0.65rem;
+    padding: 0.25rem;
+  }
+
+  .calendar {
+    gap: 0.25rem;
+  }
+
+  .day {
+    min-height: 60px;
+    padding: 0.35rem;
+    font-size: 0.75rem;
+  }
+
+  .day-number {
+    font-size: 0.95rem;
+  }
+
+  .day small {
+    font-size: 0.6rem;
+    line-height: 1.2;
+  }
+
+  select {
+    font-size: 1rem;
+    padding: 0.75rem !important;
+  }
+
+  .price-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+    padding: 1rem;
+  }
+
+  .price-info h3 {
+    font-size: 1.1rem;
+  }
+
+  .price-input-group {
+    width: 100%;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+
+  .price-input-group input {
+    width: 100%;
+  }
+
+  .save-btn {
+    width: 100%;
+    padding: 1rem;
+  }
+
+  .logout-btn {
+    width: 100%;
+  }
+
+  .file-label {
+    display: block;
+    width: 100%;
+    text-align: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .image-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .weekday-label {
+    font-size: 0.55rem;
+    padding: 0.2rem;
+  }
+
+  .calendar {
+    gap: 0.2rem;
+  }
+
+  .day {
+    min-height: 55px;
+    padding: 0.25rem;
+    font-size: 0.7rem;
+  }
+
+  .day-number {
+    font-size: 0.85rem;
+  }
+
+  .day small {
+    font-size: 0.55rem;
+    display: block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .month-navigation {
+    padding: 0.5rem;
+  }
+
+  .current-month {
+    font-size: 1rem;
+  }
+
+  .nav-btn {
+    font-size: 0.85rem;
+    padding: 0.6rem;
+  }
+
+  select {
+    font-size: 0.95rem;
+  }
+}
+
+@media (max-width: 360px) {
+  .weekday-label {
+    font-size: 0.5rem;
+  }
+
+  .day {
+    min-height: 50px;
+    padding: 0.2rem;
+  }
+
+  .day-number {
+    font-size: 0.8rem;
+  }
+
+  .day small {
+    font-size: 0.5rem;
+  }
 }

@@ -4,6 +4,8 @@ import { SiTiktok } from "react-icons/si";
 import "../home.css";
 
 export default function Footer() {
+  const currentYear = new Date().getFullYear();
+
   return (
     <footer className="footer">
       <div className="footer-container">
@@ -59,23 +61,10 @@ export default function Footer() {
             <span>No.581/113A, Rathanasara Mawatha, Anuradhapura</span>
           </div>
         </div>
-
-        <div className="footer-section">
-          <h3 className="footer-heading">Quick Links</h3>
-          <a href="#" className="footer-link">
-            Privacy Policy
-          </a>
-          <a href="#" className="footer-link">
-            Terms & Conditions
-          </a>
-          <a href="#" className="footer-link">
-            Cancellation Policy
-          </a>
-        </div>
       </div>
 
       <div className="footer-bottom">
-        <p>© 2025 Karanda Lodge. All rights reserved.</p>
+        <p>© {currentYear} Karanda Lodge. All rights reserved.</p>
       </div>
     </footer>
   );

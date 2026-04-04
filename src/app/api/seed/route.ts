@@ -13,7 +13,7 @@ export async function GET(request: Request) {
       {
         id: "double-room",
         name: "Double Room",
-        price: 5500,
+        price: 6000,
         capacity: 2,
         guests: "2 guests",
         beds: "1 Queen",
@@ -42,7 +42,7 @@ export async function GET(request: Request) {
       {
         id: "family-room",
         name: "Family Room",
-        price: "6500-7500",
+        price: "7000-8000",
         capacity: 5,
         guests: "4-5 guests",
         beds: "1 King + 1 Queen",
@@ -70,7 +70,7 @@ export async function GET(request: Request) {
       {
         id: "villa",
         name: "Villa",
-        price: 17000,
+        price: 18000,
         capacity: 9,
         guests: "7-9 guests",
         beds: "1 King + 2 Queen + Double mattress",

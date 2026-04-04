@@ -27,6 +27,7 @@ export default function Home() {
   const router = useRouter();
   const [currentSlide, setCurrentSlide] = useState(0);
   const [slides, setSlides] = useState<any[]>([]);
+  const [rooms, setRooms] = useState<any[]>([]);
 
   useEffect(() => {
     const loadSlides = () => {
@@ -57,6 +58,22 @@ export default function Home() {
   }, []);
 
   useEffect(() => {
+    const loadRooms = () => {
+      fetch("/api/rooms?t=" + Date.now())
+        .then((res) => res.json())
+        .then((data) => {
+          if (data.rooms && data.rooms.length > 0) {
+            setRooms(data.rooms);
+          }
+        })
+        .catch((err) => console.error("Error loading rooms:", err));
+    };
+    loadRooms();
+    const interval = setInterval(loadRooms, 3000);
+    return () => clearInterval(interval);
+  }, []);
+
+  useEffect(() => {
     if (slides.length === 0) return;
     const timer = setInterval(() => {
       setCurrentSlide((prev) => (prev + 1) % slides.length);
@@ -83,7 +100,7 @@ export default function Home() {
             <span className="star">
               <Star fill="#ffd700" color="#ffd700" />
             </span>
-            <span>Rated 4.9/5 on Google</span>
+            <span>Rated 5/5 on Google</span>
           </div>
           <h1 className="hero-title">
             Experience Nature at
@@ -120,7 +137,9 @@ export default function Home() {
                 width={800}
                 height={500}
               />
-              <span className="price-badge">Starting from Rs.17,000/night</span>
+              <span className="price-badge">
+                Starting from Rs.{rooms.find(r => r.id === "villa")?.price || "18,000"}/night
+              </span>
             </div>
             <div className="villa-content">
               <h3 className="villa-name">Entire Villa</h3>
@@ -184,7 +203,9 @@ export default function Home() {
                   width={500}
                   height={300}
                 />
-                <span className="price-badge">Rs.6,500-Rs.7,500/night</span>
+                <span className="price-badge">
+                  Rs.{rooms.find(r => r.id === "family-room")?.price || "7,000-8,000"}/night
+                </span>
               </div>
               <div className="room-content">
                 <h3 className="room-name">Family Room</h3>
@@ -232,7 +253,9 @@ export default function Home() {
                   width={500}
                   height={300}
                 />
-                <span className="price-badge">Rs.5,500/night</span>
+                <span className="price-badge">
+                  Rs.{rooms.find(r => r.id === "double-room")?.price || "6,000"}/night
+                </span>
               </div>
               <div className="room-content">
                 <h3 className="room-name">Double Room</h3>
@@ -279,7 +302,7 @@ export default function Home() {
         <div className="testimonial-container">
           <div className="rating-badge-large">
             <Star size={20} fill="#ffd700" color="#ffd700" />
-            <span>4.9/5</span>
+            <span>5/5</span>
           </div>
           <h2 className="testimonial-title">Trusted by Our Guests</h2>
           <p className="testimonial-description">
