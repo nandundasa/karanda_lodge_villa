@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Fix Images - Karanda Lodge</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+        }
+        button {
+            background: #2d5a3d;
+            color: white;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px;
+        }
+        button:hover {
+            background: #4a7c59;
+        }
+        .log {
+            background: #f5f5f5;
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 20px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .success { color: green; }
+        .error { color: red; }
+    </style>
+</head>
+<body>
+    <h1>Fix Images to WebP</h1>
+    <p>Click the button below to update all database references to WebP format:</p>
+    
+    <button onclick="fixImages()">Fix All Images Now</button>
+    
+    <div class="log" id="log"></div>
+
+    <script>
+        function log(message, type = 'info') {
+            const logDiv = document.getElementById('log');
+            const p = document.createElement('p');
+            p.className = type;
+            p.textContent = message;
+            logDiv.appendChild(p);
+            logDiv.scrollTop = logDiv.scrollHeight;
+        }
+
+        async function fixImages() {
+            log('Starting image fix process...');
+            
+            try {
+                // Step 1: Reseed rooms with WebP
+                log('Reseeding rooms with WebP images...');
+                const seedRes = await fetch('/api/seed');
+                const seedData = await seedRes.json();
+                log('✓ Rooms reseeded: ' + seedData.insertedCount + ' rooms', 'success');
+                
+                // Step 2: Update slides
+                log('Updating slides with WebP images...');
+                const slidesRes = await fetch('/api/slides', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        slides: [
+                            '/IMG_0922.webp',
+                            '/IMG_9527.webp',
+                            '/IMG_2255.webp',
+                            '/IMG_8574.webp',
+                            '/IMG_9537.webp'
+                        ]
+                    })
+                });
+                const slidesData = await slidesRes.json();
+                log('✓ Slides updated', 'success');
+                
+                // Step 3: Update gallery
+                log('Updating gallery with WebP images...');
+                const galleryRes = await fetch('/api/gallery', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        images: [
+                            { src: '/IMG_0922.webp', alt: 'Karanda Lodge Exterior', span: 'tall' },
+                            { src: '/IMG_8574.webp', alt: 'Dining Area', span: 'tall' },
+                            { src: '/IMG_9537.webp', alt: 'Garden View', span: 'normal' }
+                        ]
+                    })
+                });
+                const galleryData = await galleryRes.json();
+                log('✓ Gallery updated', 'success');
+                
+                log('✅ All done! Refresh your homepage now.', 'success');
+                
+            } catch (error) {
+                log('❌ Error: ' + error.message, 'error');
+            }
+        }
+    </script>
+</body>
+</html>
