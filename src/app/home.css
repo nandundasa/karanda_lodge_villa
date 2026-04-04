@@ -71,6 +71,7 @@ body {
   transition: all 0.3s ease;
   position: relative;
   padding: 0.5rem 0;
+  padding-bottom: 0.75rem;
   display: block;
 }
 
@@ -78,8 +79,7 @@ body {
   content: "";
   position: absolute;
   bottom: 0;
-  left: 50%;
-  transform: translateX(-50%);
+  left: 0;
   width: 0;
   height: 2px;
   background: linear-gradient(90deg, #4a7c59, #5a9d6a);
@@ -108,20 +108,6 @@ body {
   animation: pulse 2s ease-in-out infinite;
 }
 
-.nav-links a.active::after {
-  content: "";
-  position: absolute;
-  bottom: -2px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 6px;
-  height: 6px;
-  background: #5a9d6a;
-  border-radius: 50%;
-  box-shadow: 0 0 10px rgba(90, 157, 106, 0.6);
-  animation: glow 2s ease-in-out infinite;
-}
-
 @keyframes pulse {
   0%,
   100% {
@@ -129,16 +115,6 @@ body {
   }
   50% {
     opacity: 0.7;
-  }
-}
-
-@keyframes glow {
-  0%,
-  100% {
-    box-shadow: 0 0 10px rgba(90, 157, 106, 0.6);
-  }
-  50% {
-    box-shadow: 0 0 20px rgba(90, 157, 106, 0.9);
   }
 }
 

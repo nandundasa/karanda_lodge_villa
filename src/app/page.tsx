@@ -35,6 +35,7 @@ export default function Home() {
       try {
         const res = await fetch("/api/slides?t=" + Date.now());
         const data = await res.json();
+        console.log('Slides API response:', data);
         if (data.slides && data.slides.length > 0) {
           const formattedSlides = data.slides
             .map((slide: any) => {
@@ -47,6 +48,7 @@ export default function Home() {
             })
             .filter((slide: any) => slide && slide.length > 0);
           
+          console.log('Formatted slides:', formattedSlides);
           setSlides(formattedSlides);
           
           // Preload first 3 images
@@ -56,9 +58,30 @@ export default function Home() {
           });
           
           setSlidesLoaded(true);
+        } else {
+          console.log('No slides found, using fallback');
+          // Fallback to hardcoded WebP slides
+          const fallbackSlides = [
+            '/IMG_0922.webp',
+            '/IMG_9527.webp',
+            '/IMG_2255.webp',
+            '/IMG_8574.webp',
+            '/IMG_9537.webp'
+          ];
+          setSlides(fallbackSlides);
+          setSlidesLoaded(true);
         }
       } catch (err) {
         console.error("Error loading slides:", err);
+        // Fallback to hardcoded WebP slides
+        const fallbackSlides = [
+          '/IMG_0922.webp',
+          '/IMG_9527.webp',
+          '/IMG_2255.webp',
+          '/IMG_8574.webp',
+          '/IMG_9537.webp'
+        ];
+        setSlides(fallbackSlides);
         setSlidesLoaded(true);
       }
     };
@@ -154,7 +177,7 @@ export default function Home() {
           <div className="villa-card">
             <div className="villa-image">
               <Image
-                src="/IMG_0922.jpeg"
+                src="/IMG_0922.webp"
                 alt="Entire Villa"
                 width={800}
                 height={500}
@@ -220,7 +243,7 @@ export default function Home() {
             <div className="room-card">
               <div className="room-image">
                 <Image
-                  src="/IMG_9527.jpeg"
+                  src="/IMG_9527.webp"
                   alt="Family Room"
                   width={500}
                   height={300}
@@ -270,7 +293,7 @@ export default function Home() {
             <div className="room-card">
               <div className="room-image">
                 <Image
-                  src="/IMG_2255.jpeg"
+                  src="/IMG_2255.webp"
                   alt="Double Room"
                   width={500}
                   height={300}
