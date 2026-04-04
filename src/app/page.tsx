@@ -27,33 +27,57 @@ export default function Home() {
   const router = useRouter();
   const [currentSlide, setCurrentSlide] = useState(0);
   const [slides, setSlides] = useState<any[]>([]);
+  const [rooms, setRooms] = useState<any[]>([]);
+  const [slidesLoaded, setSlidesLoaded] = useState(false);
 
   useEffect(() => {
-    const loadSlides = () => {
-      fetch("/api/slides?t=" + Date.now())
-        .then((res) => res.json())
-        .then((data) => {
-          if (data.slides && data.slides.length > 0) {
-            // Handle deeply nested URL objects from corrupted database
-            const formattedSlides = data.slides
-              .map((slide: any) => {
-                let url = slide;
-                // Keep drilling down until we get a string
-                while (url && typeof url === "object") {
-                  url = url.url || url.src || url;
-                  if (typeof url === "object" && url.url === url) break;
-                }
-                return typeof url === "string" ? url : null;
-              })
-              .filter((slide: any) => slide && slide.length > 0);
-            setSlides(formattedSlides);
-          }
-        })
-        .catch((err) => console.error("Error loading slides:", err));
+    const loadSlides = async () => {
+      try {
+        const res = await fetch("/api/slides?t=" + Date.now());
+        const data = await res.json();
+        if (data.slides && data.slides.length > 0) {
+          const formattedSlides = data.slides
+            .map((slide: any) => {
+              let url = slide;
+              while (url && typeof url === "object") {
+                url = url.url || url.src || url;
+                if (typeof url === "object" && url.url === url) break;
+              }
+              return typeof url === "string" ? url : null;
+            })
+            .filter((slide: any) => slide && slide.length > 0);
+          
+          setSlides(formattedSlides);
+          
+          // Preload first 3 images
+          formattedSlides.slice(0, 3).forEach((src: string) => {
+            const img = new window.Image();
+            img.src = src;
+          });
+          
+          setSlidesLoaded(true);
+        }
+      } catch (err) {
+        console.error("Error loading slides:", err);
+        setSlidesLoaded(true);
+      }
     };
     loadSlides();
-    const interval = setInterval(loadSlides, 3000);
-    return () => clearInterval(interval);
+  }, []);
+
+  useEffect(() => {
+    const loadRooms = async () => {
+      try {
+        const res = await fetch("/api/rooms?t=" + Date.now());
+        const data = await res.json();
+        if (data.rooms && data.rooms.length > 0) {
+          setRooms(data.rooms);
+        }
+      } catch (err) {
+        console.error("Error loading rooms:", err);
+      }
+    };
+    loadRooms();
   }, []);
 
   useEffect(() => {
@@ -63,12 +87,27 @@ export default function Home() {
     }, 5000);
     return () => clearInterval(timer);
   }, [slides.length]);
+
+  useEffect(() => {
+    const script = document.createElement('script');
+    script.src = 'https://www.tiktok.com/embed.js';
+    script.async = true;
+    document.body.appendChild(script);
+    return () => {
+      if (document.body.contains(script)) {
+        document.body.removeChild(script);
+      }
+    };
+  }, []);
   return (
     <>
       <Navbar />
 
       <main className="hero" id="home">
         <div className="slideshow">
+          {!slidesLoaded && (
+            <div className="slide active" style={{ background: 'linear-gradient(135deg, #2d5a3d 0%, #4a7c59 100%)' }} />
+          )}
           {slides.length > 0 &&
             slides.map((slide, index) => (
               <div
@@ -83,7 +122,7 @@ export default function Home() {
             <span className="star">
               <Star fill="#ffd700" color="#ffd700" />
             </span>
-            <span>Rated 4.9/5 on Google</span>
+            <span>Rated 5/5 on Google</span>
           </div>
           <h1 className="hero-title">
             Experience Nature at
@@ -120,7 +159,9 @@ export default function Home() {
                 width={800}
                 height={500}
               />
-              <span className="price-badge">Starting from Rs.17,000/night</span>
+              <span className="price-badge">
+                Starting from Rs.{rooms.find(r => r.id === "villa")?.price || "18,000"}/night
+              </span>
             </div>
             <div className="villa-content">
               <h3 className="villa-name">Entire Villa</h3>
@@ -184,7 +225,9 @@ export default function Home() {
                   width={500}
                   height={300}
                 />
-                <span className="price-badge">Rs.6,500-Rs.7,500/night</span>
+                <span className="price-badge">
+                  Rs.{rooms.find(r => r.id === "family-room")?.price || "7,000-8,000"}/night
+                </span>
               </div>
               <div className="room-content">
                 <h3 className="room-name">Family Room</h3>
@@ -232,7 +275,9 @@ export default function Home() {
                   width={500}
                   height={300}
                 />
-                <span className="price-badge">Rs.5,500/night</span>
+                <span className="price-badge">
+                  Rs.{rooms.find(r => r.id === "double-room")?.price || "6,000"}/night
+                </span>
               </div>
               <div className="room-content">
                 <h3 className="room-name">Double Room</h3>
@@ -279,15 +324,41 @@ export default function Home() {
         <div className="testimonial-container">
           <div className="rating-badge-large">
             <Star size={20} fill="#ffd700" color="#ffd700" />
-            <span>4.9/5</span>
+            <span>5/5</span>
           </div>
           <h2 className="testimonial-title">Trusted by Our Guests</h2>
           <p className="testimonial-description">
             Join hundreds of satisfied guests who have experienced the magic of
             Karanda
             <br />
-            Lodge. Rated excellent on Google with over 250+ reviews.
+            Lodge. Rated excellent on Google with over 50+ reviews.
           </p>
+        </div>
+      </section>
+
+      <section className="tiktok-section">
+        <div className="tiktok-container">
+          <h2 className="tiktok-title">Follow Our Journey</h2>
+          <p className="tiktok-subtitle">Watch our latest videos on TikTok</p>
+          <div className="tiktok-embed-wrapper">
+            <blockquote 
+              className="tiktok-embed" 
+              cite="https://www.tiktok.com/@karanda.lodge" 
+              data-unique-id="karanda.lodge" 
+              data-embed-type="creator" 
+              style={{ maxWidth: '780px', minWidth: '288px' }}
+            >
+              <section>
+                <a 
+                  target="_blank" 
+                  href="https://www.tiktok.com/@karanda.lodge?refer=creator_embed"
+                  rel="noopener noreferrer"
+                >
+                  @karanda.lodge
+                </a>
+              </section>
+            </blockquote>
+          </div>
         </div>
       </section>
 

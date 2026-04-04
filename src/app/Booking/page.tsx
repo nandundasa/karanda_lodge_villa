@@ -16,8 +16,6 @@ interface CalendarProps {
   title: string;
   roomType: "family" | "double" | "villa";
   bookedDates: string[];
-  selectedDates: string[];
-  onDateClick: (dateStr: string) => void;
   currentMonth: Date;
   onMonthChange: (date: Date) => void;
 }
@@ -26,8 +24,6 @@ function Calendar({
   title,
   roomType,
   bookedDates,
-  selectedDates,
-  onDateClick,
   currentMonth,
   onMonthChange,
 }: CalendarProps) {
@@ -91,7 +87,6 @@ function Calendar({
   const getDayClass = (day: number) => {
     const dateStr = getDateString(day);
     if (isPastDate(day)) return "past";
-    if (selectedDates.includes(dateStr)) return "selected";
     if (bookedDates.includes(dateStr)) return "booked";
     return "available";
   };
@@ -126,7 +121,6 @@ function Calendar({
             <div
               key={day}
               className={`day ${getDayClass(day)}`}
-              onClick={() => onDateClick(dateStr)}
             >
               {day}
             </div>
@@ -134,10 +128,6 @@ function Calendar({
         })}
       </div>
       <div className="legend">
-        <div className="legend-item">
-          <span className="legend-color selected"></span>
-          <span>Selected</span>
-        </div>
         <div className="legend-item">
           <span className="legend-color booked"></span>
           <span>Booked</span>
@@ -153,9 +143,6 @@ function Calendar({
 
 export default function Booking() {
   const [rooms, setRooms] = useState<Room[]>([]);
-  const [familySelected, setFamilySelected] = useState<string[]>([]);
-  const [doubleSelected, setDoubleSelected] = useState<string[]>([]);
-  const [villaSelected, setVillaSelected] = useState<string[]>([]);
   const [currentMonth, setCurrentMonth] = useState(() => {
     const today = new Date();
     return new Date(today.getFullYear(), today.getMonth(), 1);
@@ -182,56 +169,6 @@ export default function Booking() {
   const doubleBooked = getBookedDates("double-room");
   const villaBooked = getBookedDates("villa");
 
-  const isPastDate = (dateStr: string) => {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const dateToCheck = new Date(dateStr);
-    return dateToCheck < today;
-  };
-
-  const handleFamilyClick = (dateStr: string) => {
-    if (
-      isPastDate(dateStr) ||
-      familyBooked.includes(dateStr) ||
-      villaBooked.includes(dateStr)
-    )
-      return;
-    setFamilySelected((prev) =>
-      prev.includes(dateStr)
-        ? prev.filter((d) => d !== dateStr)
-        : [...prev, dateStr]
-    );
-  };
-
-  const handleDoubleClick = (dateStr: string) => {
-    if (
-      isPastDate(dateStr) ||
-      doubleBooked.includes(dateStr) ||
-      villaBooked.includes(dateStr)
-    )
-      return;
-    setDoubleSelected((prev) =>
-      prev.includes(dateStr)
-        ? prev.filter((d) => d !== dateStr)
-        : [...prev, dateStr]
-    );
-  };
-
-  const handleVillaClick = (dateStr: string) => {
-    if (
-      isPastDate(dateStr) ||
-      familyBooked.includes(dateStr) ||
-      doubleBooked.includes(dateStr) ||
-      villaBooked.includes(dateStr)
-    )
-      return;
-    setVillaSelected((prev) =>
-      prev.includes(dateStr)
-        ? prev.filter((d) => d !== dateStr)
-        : [...prev, dateStr]
-    );
-  };
-
   const getVillaBookedDates = () => {
     return [...new Set([...familyBooked, ...doubleBooked, ...villaBooked])];
   };
@@ -245,8 +182,6 @@ export default function Booking() {
             title="Family Room"
             roomType="family"
             bookedDates={[...familyBooked, ...villaBooked]}
-            selectedDates={familySelected}
-            onDateClick={handleFamilyClick}
             currentMonth={currentMonth}
             onMonthChange={setCurrentMonth}
           />
@@ -254,8 +189,6 @@ export default function Booking() {
             title="Double Room"
             roomType="double"
             bookedDates={[...doubleBooked, ...villaBooked]}
-            selectedDates={doubleSelected}
-            onDateClick={handleDoubleClick}
             currentMonth={currentMonth}
             onMonthChange={setCurrentMonth}
           />
@@ -263,8 +196,6 @@ export default function Booking() {
             title="Entire Villa"
             roomType="villa"
             bookedDates={getVillaBookedDates()}
-            selectedDates={villaSelected}
-            onDateClick={handleVillaClick}
             currentMonth={currentMonth}
             onMonthChange={setCurrentMonth}
           />

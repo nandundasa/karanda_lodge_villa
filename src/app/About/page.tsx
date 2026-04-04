@@ -1,9 +1,6 @@
 "use client";
 import {
   Leaf,
-  Heart,
-  Award,
-  Users,
   MapPin,
   Star,
   Siren,

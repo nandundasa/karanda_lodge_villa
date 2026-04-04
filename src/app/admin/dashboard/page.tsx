@@ -27,6 +27,8 @@ export default function Dashboard() {
   const [selectedRoom, setSelectedRoom] = useState<string>("");
   const [currentMonth, setCurrentMonth] = useState(new Date().getMonth());
   const [currentYear, setCurrentYear] = useState(new Date().getFullYear());
+  const [editingPrices, setEditingPrices] = useState(false);
+  const [tempPrices, setTempPrices] = useState<Record<string, number | string>>({});
 
   useEffect(() => {
     if (!sessionStorage.getItem("adminAuth")) {
@@ -34,6 +36,9 @@ export default function Dashboard() {
       return;
     }
     loadData();
+    // Refresh data every 30 seconds instead of 3 seconds
+    const interval = setInterval(loadData, 30000);
+    return () => clearInterval(interval);
   }, []);
 
   const loadData = async () => {
@@ -83,6 +88,13 @@ export default function Dashboard() {
         })
       );
       setRooms(roomsWithAvailability);
+      
+      // Initialize temp prices
+      const prices: Record<string, number | string> = {};
+      roomsWithAvailability.forEach((room: Room) => {
+        prices[room.id] = room.price;
+      });
+      setTempPrices(prices);
     } catch (error) {
       console.error("Error loading data:", error);
       setGallery([]);
@@ -236,6 +248,33 @@ export default function Dashboard() {
     });
   };
 
+  const savePrices = async () => {
+    try {
+      const updatedRooms = rooms.map(room => ({
+        ...room,
+        price: tempPrices[room.id]
+      }));
+
+      const response = await fetch("/api/rooms", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ rooms: updatedRooms }),
+      });
+
+      const data = await response.json();
+      if (response.ok && data.success) {
+        await loadData();
+        setEditingPrices(false);
+        alert("Prices updated successfully!");
+      } else {
+        alert("Error updating prices: " + (data.error || "Unknown error"));
+      }
+    } catch (error) {
+      console.error("Error saving prices:", error);
+      alert("Network error. Please check your connection.");
+    }
+  };
+
   const saveRooms = async () => {
     try {
       console.log("Saving rooms:", rooms);
@@ -335,6 +374,12 @@ export default function Dashboard() {
             Gallery
           </button>
           <button
+            className={`tab ${activeTab === "prices" ? "active" : ""}`}
+            onClick={() => setActiveTab("prices")}
+          >
+            Room Prices
+          </button>
+          <button
             className={`tab ${activeTab === "availability" ? "active" : ""}`}
             onClick={() => setActiveTab("availability")}
           >
@@ -408,6 +453,41 @@ export default function Dashboard() {
                   </div>
                 ))}
             </div>
+          </div>
+        )}
+
+        {activeTab === "prices" && (
+          <div className="section">
+            <h2>Room Prices</h2>
+            <div className="prices-container">
+              {rooms.map((room) => (
+                <div key={room.id} className="price-item">
+                  <div className="price-info">
+                    <h3>{room.name}</h3>
+                    <p className="current-price">
+                      Current: Rs.{room.price}/night
+                    </p>
+                  </div>
+                  <div className="price-input-group">
+                    <label>New Price:</label>
+                    <input
+                      type="text"
+                      value={tempPrices[room.id] || ""}
+                      onChange={(e) =>
+                        setTempPrices({
+                          ...tempPrices,
+                          [room.id]: e.target.value,
+                        })
+                      }
+                      placeholder={room.name === "Family Room" ? "7000-8000" : "6000"}
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
+            <button className="save-btn" onClick={savePrices}>
+              Save Prices
+            </button>
           </div>
         )}
 
