@@ -51,7 +51,7 @@ export default function Home() {
           
           // Preload first 3 images
           formattedSlides.slice(0, 3).forEach((src: string) => {
-            const img = new Image();
+            const img = new window.Image();
             img.src = src;
           });
           
