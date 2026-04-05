@@ -9,19 +9,14 @@ export default function WelcomeScreen() {
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    // Only show once per session
-    const hasSeenWelcome = sessionStorage.getItem("karanda_welcome_seen");
-    if (!hasSeenWelcome) {
-      setVisible(true);
-      // Lock body scroll while welcome is showing
-      document.body.style.overflow = "hidden";
-    }
+    setVisible(true);
+    // Lock body scroll while welcome is showing
+    document.body.style.overflow = "hidden";
   }, []);
 
   const dismiss = useCallback(() => {
     if (exiting) return;
     setExiting(true);
-    sessionStorage.setItem("karanda_welcome_seen", "true");
     // Wait for exit animation to complete
     setTimeout(() => {
       setVisible(false);
