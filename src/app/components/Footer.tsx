@@ -65,6 +65,24 @@ export default function Footer() {
 
       <div className="footer-bottom">
         <p>© {currentYear} Karanda Lodge. All rights reserved.</p>
+        <div className="developer-credit">
+          <span>Designed & Developed By</span>
+          <a
+            href="https://linkedin.com/company/cryzto-labs/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="developer-credit-link"
+          >
+            <Image
+              src="/logonew.png"
+              alt="Cryzto Labs Logo"
+              width={20}
+              height={20}
+              className="developer-logo"
+            />
+            <span>Cryzto Labs</span>
+          </a>
+        </div>
       </div>
     </footer>
   );
