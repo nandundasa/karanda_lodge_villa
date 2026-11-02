@@ -3,7 +3,28 @@
 ## Access the Admin Panel
 
 1. Navigate to: `http://localhost:3000/admin`
-2. Default password: `KarandaLodge2002`
+2. Log in with the password set in the `ADMIN_PASSWORD` environment variable.
+
+## Manager Panel
+
+- Navigate to: `http://localhost:3000/manager/login`
+- Log in with the password set in `MANAGER_PASSWORD`.
+- Managers can only view current/upcoming bookings and upload the guest's ID
+  (front and back). They cannot change rooms, prices, slides or the gallery.
+
+## Required environment variables
+
+Set these in `.env.local` (and in your hosting provider's settings):
+
+```
+MONGODB_URI=...
+AUTH_SECRET=<random string, 32+ characters, e.g. `openssl rand -base64 48`>
+ADMIN_PASSWORD=<admin password>
+MANAGER_PASSWORD=<manager password>
+```
+
+Logins and all admin write APIs are checked on the server. Sessions last 12
+hours; changing `AUTH_SECRET` logs everyone out.
 
 ## Features
 

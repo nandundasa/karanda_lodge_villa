@@ -1,6 +1,6 @@
 import { MongoClient, Db } from "mongodb";
 
-let cached: { conn: MongoClient | null; db: Db | null } = {
+const cached: { conn: MongoClient | null; db: Db | null } = {
   conn: null,
   db: null,
 };
