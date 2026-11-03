@@ -131,6 +131,11 @@
   }
 }
 
+/* Welcome screen already seen this session (set by the inline <head> script) */
+html[data-welcome-seen] [data-welcome] {
+  display: none !important;
+}
+
 /* Welcome screen failsafe: hide the intro even if JavaScript never runs */
 @keyframes kl-welcome-failsafe {
   to {

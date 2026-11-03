@@ -1,11 +1,35 @@
 "use client";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from "react";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { AnimatePresence, motion, type Variants } from "motion/react";
 
 const DURATION = 3600; // ms before the intro dismisses itself
 const TITLE = "Karanda Lodge";
+
+/** sessionStorage key: the intro plays once per browser tab session */
+export const WELCOME_KEY = "hasSeenWelcome";
+
+function hasSeenWelcome() {
+  try {
+    return sessionStorage.getItem(WELCOME_KEY) !== null;
+  } catch {
+    return false; // storage blocked (e.g. some private modes): just show it
+  }
+}
+function markWelcomeSeen() {
+  try {
+    sessionStorage.setItem(WELCOME_KEY, "true");
+  } catch {}
+}
+const noSubscribe = () => () => {};
+
+/**
+ * Runs in <head> before first paint (see layout.tsx). The overlay is rendered
+ * on the server, which can't read sessionStorage, so this hides it instantly
+ * for visitors who've already seen it, with no flash.
+ */
+export const WELCOME_SEEN_SCRIPT = `try{if(sessionStorage.getItem(${JSON.stringify(WELCOME_KEY)})!==null)document.documentElement.setAttribute("data-welcome-seen","")}catch(e){}`;
 
 const letters: Variants = {
   hidden: {},
@@ -22,20 +46,26 @@ const fadeUp = (delay: number) => ({
 });
 
 /**
- * Full-screen intro shown on each full page load of the public site.
- * Rendered on the server so it covers the page from the first paint; a CSS
- * failsafe fades it out even if JavaScript never runs.
+ * Full-screen intro, shown on the first visit per session (sessionStorage
+ * "hasSeenWelcome"). Rendered on the server so it covers the page from the
+ * first paint; a CSS failsafe fades it out even if JavaScript never runs.
  */
 export default function WelcomeScreen() {
   const pathname = usePathname();
   const hidden = pathname?.startsWith("/admin") || pathname?.startsWith("/manager");
-  const [open, setOpen] = useState(!hidden);
+  // false on the server and during hydration, then the real value on the client
+  const seen = useSyncExternalStore(noSubscribe, hasSeenWelcome, () => false);
+  const [open, setOpen] = useState(true);
+  const show = open && !hidden && !seen;
   const ref = useRef<HTMLDivElement>(null);
 
-  const dismiss = useCallback(() => setOpen(false), []);
+  const dismiss = useCallback(() => {
+    markWelcomeSeen();
+    setOpen(false);
+  }, []);
 
   useEffect(() => {
-    if (!open) return;
+    if (!show) return;
     const prev = document.body.style.overflow;
     document.body.style.overflow = "hidden";
     ref.current?.focus();
@@ -49,16 +79,17 @@ export default function WelcomeScreen() {
       window.removeEventListener("keydown", onKey);
       document.body.style.overflow = prev;
     };
-  }, [open, dismiss]);
+  }, [show, dismiss]);
 
   if (hidden) return null;
 
   return (
     <AnimatePresence>
-      {open && (
+      {show && (
         <motion.div
           ref={ref}
           key="welcome"
+          data-welcome=""
           role="dialog"
           aria-modal="true"
           aria-label="Welcome to Karanda Lodge"

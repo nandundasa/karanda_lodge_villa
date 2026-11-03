@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono, Cormorant_Garamond } from "next/font/google";
 import "./globals.css";
 import WhatsAppButton from "./components/WhatsAppButton";
-import WelcomeScreen from "./components/WelcomeScreen";
+import WelcomeScreen, { WELCOME_SEEN_SCRIPT } from "./components/WelcomeScreen";
 import Providers from "./components/Providers";
 
 const geistSans = Geist({
@@ -38,6 +38,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
+      <head>
+        {/* Hide the intro before first paint if it was already seen this session */}
+        <script dangerouslySetInnerHTML={{ __html: WELCOME_SEEN_SCRIPT }} />
+      </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} ${cormorant.variable} antialiased`}
         suppressHydrationWarning
