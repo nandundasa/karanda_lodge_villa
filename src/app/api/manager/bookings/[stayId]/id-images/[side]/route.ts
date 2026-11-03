@@ -1,17 +1,20 @@
 import { NextResponse } from "next/server";
 import { connectToDatabase } from "@/lib/mongodb";
-import { requireRole } from "@/lib/auth";
+import { requireAnyRole } from "@/lib/auth";
 import { ID_IMAGE_SIDES, type IdImageSide } from "@/lib/idImages";
 import type { Booking } from "@/lib/models";
 
 export const dynamic = "force-dynamic";
 
-/** Serve one stored ID image to an authenticated manager. Never cached. */
+/**
+ * Serve one stored guest ID image (WebP bytes from MongoDB) to an
+ * authenticated manager OR admin. Read-only; never cached by browsers or proxies.
+ */
 export async function GET(
   _request: Request,
   { params }: { params: Promise<{ stayId: string; side: string }> }
 ) {
-  const denied = await requireRole("manager");
+  const denied = await requireAnyRole(["manager", "admin"]);
   if (denied) return denied;
 
   const { stayId, side } = await params;
@@ -34,6 +37,9 @@ export async function GET(
       headers: {
         "Content-Type": image.contentType,
         "Cache-Control": "private, no-store",
+        // Guest ID photos must never be indexed or embedded elsewhere
+        "X-Robots-Tag": "noindex, nofollow",
+        "Content-Disposition": `inline; filename="id-${side}.webp"`,
         "X-Content-Type-Options": "nosniff",
       },
     });

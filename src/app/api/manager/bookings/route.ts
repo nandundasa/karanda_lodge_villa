@@ -1,14 +1,17 @@
 import { NextResponse } from "next/server";
 import { connectToDatabase } from "@/lib/mongodb";
-import { requireRole } from "@/lib/auth";
+import { requireAnyRole } from "@/lib/auth";
 import { getActiveStays } from "@/lib/stays";
 import type { Booking, GuestIdImage } from "@/lib/models";
 
 export const dynamic = "force-dynamic";
 
-/** Read-only list of current/upcoming stays with ID-upload status (no image bytes). */
+/**
+ * Read-only list of current/upcoming stays with ID-upload status (metadata only,
+ * no image bytes). Available to managers and admins; uploading stays manager-only.
+ */
 export async function GET() {
-  const denied = await requireRole("manager");
+  const denied = await requireAnyRole(["manager", "admin"]);
   if (denied) return denied;
 
   try {

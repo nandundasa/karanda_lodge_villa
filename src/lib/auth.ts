@@ -83,6 +83,18 @@ export async function requireRole(role: Role): Promise<NextResponse | null> {
   return null;
 }
 
+/**
+ * Returns a 401 response unless the caller has a valid session for at least
+ * one of `roles` (each role's signed cookie is verified independently),
+ * otherwise null.
+ */
+export async function requireAnyRole(roles: Role[]): Promise<NextResponse | null> {
+  for (const role of roles) {
+    if (await hasRole(role)) return null;
+  }
+  return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+}
+
 function cookieOptions(maxAge: number) {
   return {
     httpOnly: true,
