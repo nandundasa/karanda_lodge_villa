@@ -1,34 +1,23 @@
 "use client";
-import {
-  Users,
-  SoapDispenserDroplet,
-  Car,
-  Wind,
-  Coffee,
-  ArchiveRestore,
-  Bed,
-  ChevronLeft,
-  ChevronRight,
-  Calendar,
-  Tv,
-  Utensils,
-  Bath,
-  Sofa,
-  Home,
-  Flame,
-} from "lucide-react";
-import Image from "next/image";
-import { useState, useEffect } from "react";
+import { useEffect, useMemo, useState } from "react";
+import Link from "next/link";
+import { AnimatePresence, motion } from "motion/react";
+import { ArrowRight, BedDouble, CalendarDays, ChevronDown, MessageCircle, Users } from "lucide-react";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
-import "./rooms.css";
+import PageHero from "../components/ui/PageHero";
+import Reveal from "../components/ui/Reveal";
+import RoomGallery from "./RoomGallery";
+import AvailabilityCalendar from "./AvailabilityCalendar";
+import { AMENITIES, ROOM_ORDER, TAGLINES, formatPrice, isRoomId, type RoomId } from "@/lib/content/rooms";
+import { CONTACT } from "@/lib/content/site";
 
 interface Room {
   _id?: string;
   id: string;
   name: string;
   description: string;
-  price: number;
+  price: number | string;
   images?: string[];
   cardImage?: string;
   guests?: string | number;
@@ -37,401 +26,310 @@ interface Room {
   availability?: Record<string, boolean>;
 }
 
-// Room slideshow component
-function RoomSlideshow({ images, alt }: { images: string[]; alt: string }) {
-  const [currentIndex, setCurrentIndex] = useState(0);
+type LoadState = "loading" | "ready" | "error";
 
-  const nextSlide = () => {
-    setCurrentIndex((prevIndex) => (prevIndex + 1) % images.length);
-  };
-
-  const prevSlide = () => {
-    setCurrentIndex((prevIndex) =>
-      prevIndex === 0 ? images.length - 1 : prevIndex - 1
-    );
-  };
-
-  return (
-    <div className="slideshow-container">
-      <Image
-        src={images[currentIndex]}
-        alt={`${alt} - Image ${currentIndex + 1}`}
-        fill
-        sizes="(max-width: 968px) 100vw, 50vw"
-        className="room-main-image"
-        priority
-      />
-      {images.length > 1 && (
-        <>
-          <button className="slide-btn prev" onClick={prevSlide}>
-            <ChevronLeft size={24} />
-          </button>
-          <button className="slide-btn next" onClick={nextSlide}>
-            <ChevronRight size={24} />
-          </button>
-          <div className="slide-indicators">
-            {images.map((_, index) => (
-              <button
-                key={index}
-                className={`indicator ${
-                  index === currentIndex ? "active" : ""
-                }`}
-                onClick={() => setCurrentIndex(index)}
-              />
-            ))}
-          </div>
-        </>
-      )}
-    </div>
-  );
-}
-
-// Mini calendar component for each room
-function RoomCalendar({
-  availability,
-}: {
-  availability: Record<string, boolean>;
-}) {
-  const [currentMonth, setCurrentMonth] = useState(new Date().getMonth());
-  const [currentYear, setCurrentYear] = useState(new Date().getFullYear());
-
-  const getDatesForMonth = () => {
-    const dates = [];
-    const lastDay = new Date(currentYear, currentMonth + 1, 0);
-    for (let d = 1; d <= lastDay.getDate(); d++) {
-      const year = currentYear;
-      const month = String(currentMonth + 1).padStart(2, "0");
-      const day = String(d).padStart(2, "0");
-      dates.push(`${year}-${month}-${day}`);
-    }
-    return dates;
-  };
-
-  const getMonthName = () => {
-    return new Date(currentYear, currentMonth).toLocaleDateString("en-US", {
-      month: "long",
-      year: "numeric",
-    });
-  };
-
-  const goToPreviousMonth = () => {
-    if (currentMonth === 0) {
-      setCurrentMonth(11);
-      setCurrentYear(currentYear - 1);
-    } else {
-      setCurrentMonth(currentMonth - 1);
-    }
-  };
-
-  const goToNextMonth = () => {
-    if (currentMonth === 11) {
-      setCurrentMonth(0);
-      setCurrentYear(currentYear + 1);
-    } else {
-      setCurrentMonth(currentMonth + 1);
-    }
-  };
-
-  return (
-    <div className="room-calendar">
-      <div className="calendar-nav">
-        <button onClick={goToPreviousMonth}>
-          <ChevronLeft size={18} />
-        </button>
-        <span>{getMonthName()}</span>
-        <button onClick={goToNextMonth}>
-          <ChevronRight size={18} />
-        </button>
-      </div>
-      <div className="calendar-weekdays">
-        <span>Su</span>
-        <span>Mo</span>
-        <span>Tu</span>
-        <span>We</span>
-        <span>Th</span>
-        <span>Fr</span>
-        <span>Sa</span>
-      </div>
-      <div className="calendar-days">
-        {Array.from({
-          length: new Date(currentYear, currentMonth, 1).getDay(),
-        }).map((_, i) => (
-          <div key={`empty-${i}`} className="calendar-day empty"></div>
-        ))}
-        {getDatesForMonth().map((date) => {
-          const isBooked = availability && availability[date] === true;
-          const [year, month, day] = date.split("-").map(Number);
-          const today = new Date();
-          today.setHours(0, 0, 0, 0);
-          const dateObj = new Date(year, month - 1, day);
-          const isPast = dateObj < today;
-
-          return (
-            <div
-              key={date}
-              className={`calendar-day ${isBooked ? "booked" : "available"} ${
-                isPast ? "past" : ""
-              }`}
-              title={isBooked ? "Booked" : "Available"}
-            >
-              {day}
-            </div>
-          );
-        })}
-      </div>
-      <div className="calendar-legend">
-        <span className="legend-item">
-          <span className="dot available"></span> Available
-        </span>
-        <span className="legend-item">
-          <span className="dot booked"></span> Booked
-        </span>
-      </div>
-    </div>
-  );
-}
-
-export default function Rooms() {
+export default function RoomsPage() {
   const [rooms, setRooms] = useState<Room[]>([]);
-  const [showCalendar, setShowCalendar] = useState<string | null>(null);
+  const [state, setState] = useState<LoadState>("loading");
+  const [highlight, setHighlight] = useState<string | null>(null);
 
+  // Load once, and refresh when the visitor comes back to the tab
   useEffect(() => {
-    const loadRooms = () => {
-      fetch("/api/rooms?t=" + Date.now())
-        .then((res) => res.json())
-        .then((data) => {
-          if (data.rooms && data.rooms.length > 0) {
-            setRooms(data.rooms);
-          } else {
-            setRooms([]);
-          }
-        })
-        .catch((err) => console.error("Error loading rooms:", err));
+    let cancelled = false;
+    const load = async () => {
+      try {
+        const res = await fetch("/api/rooms", { cache: "no-store" });
+        const data = await res.json();
+        if (cancelled) return;
+        setRooms(Array.isArray(data.rooms) ? data.rooms : []);
+        setState(res.ok ? "ready" : "error");
+      } catch {
+        if (!cancelled) setState((s) => (s === "loading" ? "error" : s));
+      }
     };
-    loadRooms();
-    const interval = setInterval(loadRooms, 3000);
-    return () => clearInterval(interval);
+    load();
+    const onVisible = () => document.visibilityState === "visible" && load();
+    document.addEventListener("visibilitychange", onVisible);
+    return () => {
+      cancelled = true;
+      document.removeEventListener("visibilitychange", onVisible);
+    };
   }, []);
 
-  // Scroll to hash element after rooms are loaded
-  useEffect(() => {
-    if (rooms.length > 0 && window.location.hash) {
-      const id = window.location.hash.substring(1);
-      const element = document.getElementById(id);
-      if (element) {
-        setTimeout(() => {
-          const navbarHeight = 80; // Account for fixed navbar
-          const elementPosition = element.getBoundingClientRect().top + window.scrollY;
-          window.scrollTo({
-            top: elementPosition - navbarHeight,
-            behavior: "smooth"
-          });
-          // Add highlight animation
-          element.classList.add("highlight");
-          setTimeout(() => {
-            element.classList.remove("highlight");
-          }, 2000);
-        }, 100);
-      }
+  const ordered = useMemo(
+    () =>
+      rooms
+        .filter((r): r is Room & { id: RoomId } => isRoomId(r.id))
+        .sort((a, b) => ROOM_ORDER.indexOf(a.id) - ROOM_ORDER.indexOf(b.id)),
+    [rooms]
+  );
+
+  // The villa is unavailable whenever it, or either of its rooms, is booked
+  const villaBooked = useMemo(() => {
+    const combined: Record<string, boolean> = {};
+    for (const r of rooms) {
+      if (!isRoomId(r.id)) continue;
+      for (const [date, b] of Object.entries(r.availability || {})) if (b) combined[date] = true;
     }
+    return combined;
   }, [rooms]);
 
-  // Get combined availability for Villa (includes Family Room + Double Room bookings)
-  const getVillaAvailability = (): Record<string, boolean> => {
-    const familyRoom = rooms.find((r) => r.id === "family-room");
-    const doubleRoom = rooms.find((r) => r.id === "double-room");
-    const villa = rooms.find((r) => r.id === "villa");
-
-    const combined: Record<string, boolean> = {};
-
-    // Add Villa's own bookings
-    if (villa?.availability) {
-      Object.entries(villa.availability).forEach(([date, isBooked]) => {
-        if (isBooked) combined[date] = true;
-      });
-    }
-
-    // Add Family Room bookings (Villa is unavailable when Family Room is booked)
-    if (familyRoom?.availability) {
-      Object.entries(familyRoom.availability).forEach(([date, isBooked]) => {
-        if (isBooked) combined[date] = true;
-      });
-    }
-
-    // Add Double Room bookings (Villa is unavailable when Double Room is booked)
-    if (doubleRoom?.availability) {
-      Object.entries(doubleRoom.availability).forEach(([date, isBooked]) => {
-        if (isBooked) combined[date] = true;
-      });
-    }
-
-    return combined;
-  };
-
-  // Get availability for a room (with special handling for Villa)
-  const getRoomAvailability = (room: Room): Record<string, boolean> => {
-    if (room.id === "villa") {
-      return getVillaAvailability();
-    }
-    return room.availability || {};
-  };
+  // Deep links like /Rooms#villa: scroll below the navbar and glow the card
+  useEffect(() => {
+    if (state !== "ready") return;
+    const id = decodeURIComponent(window.location.hash.slice(1));
+    const el = id && document.getElementById(id);
+    if (!el) return;
+    const t = setTimeout(() => {
+      window.scrollTo({ top: el.getBoundingClientRect().top + window.scrollY - 88, behavior: "smooth" });
+      setHighlight(id);
+      setTimeout(() => setHighlight(null), 2200);
+    }, 150);
+    return () => clearTimeout(t);
+  }, [state]);
 
   return (
     <>
       <Navbar />
-      <main className="rooms-page">
-        {rooms.length > 0 ? (
-          rooms.map((room) => (
-            <div key={room._id || room.id} id={room.id} className="room-detail">
-              <div className="room-image-container">
-                {room.cardImage && (
-                  <div className="room-card-image">
-                    <Image
-                      src={room.cardImage}
-                      alt={`${room.name} - Card Image`}
-                      fill
-                      sizes="(max-width: 968px) 100vw, 50vw"
-                      className="card-image"
-                      priority
-                    />
-                  </div>
-                )}
-                <div className="room-main-container">
-                  <RoomSlideshow
-                    images={
-                      room.images && room.images.length > 0
-                        ? room.images
-                        : ["/placeholder-room.png"]
-                    }
-                    alt={room.name}
-                  />
-                </div>
-                {room.images && room.images.length > 1 && (
-                  <div className="room-thumbnails">
-                    {room.images.map((image, index) => (
-                      <div
-                        key={index}
-                        className="thumbnail"
-                        onClick={() => {
-                          // This would require state management in RoomSlideshow
-                          // For now, this is a visual indicator
-                        }}
-                      >
-                        <Image
-                          src={image}
-                          alt={`Thumbnail ${index + 1}`}
-                          width={80}
-                          height={80}
-                        />
-                      </div>
-                    ))}
-                  </div>
-                )}
-                <span className="price-tag">
-                  {room.name === "Villa"
-                    ? `Starting from Rs.${room.price.toLocaleString()}/night`
-                    : room.name === "Family Room"
-                    ? `Rs.${room.price}/night`
-                    : `Rs.${room.price.toLocaleString()}/night`}
-                </span>
-              </div>
-              <div className="room-info">
-                <h1 className="room-title">{room.name}</h1>
-                <p className="room-desc">{room.description}</p>
-                <div className="room-stats">
-                  <div className="stat">
-                    <Users size={20} />
-                    <span>{room.guests || room.capacity || 2}</span>
-                  </div>
-                  <div className="stat">
-                    <Bed size={20} />
-                    <span>{room.beds || 1}</span>
-                  </div>
-                </div>
-                <div className="room-features">
-                  <h3>
-                    {room.id === "villa" ? "Villa Features" : "Room Features"}
-                  </h3>
-                  <div className="features-grid">
-                    {room.id === "villa" ? (
-                      <>
-                        <div className="feature">
-                          <Home size={18} /> 2 Bedrooms
-                        </div>
-                        <div className="feature">
-                          <Bath size={18} /> 2 Bathrooms
-                        </div>
-                        <div className="feature">
-                          <Utensils size={18} /> Full Kitchen
-                        </div>
-                        <div className="feature">
-                          <Sofa size={18} /> Living Area
-                        </div>
-                        <div className="feature">
-                          <Tv size={18} /> Smart TV
-                        </div>
-                        <div className="feature">
-                          <Wind size={18} /> Air Conditioning
-                        </div>
-                        <div className="feature">
-                          <Car size={18} /> Free Parking
-                        </div>
-                        <div className="feature">
-                          <Coffee size={18} /> Kettle
-                        </div>
-                        <div className="feature">
-                          <ArchiveRestore size={18} /> Cupboards
-                        </div>
-                        <div className="feature">
-                          <Flame size={18} /> Hot Water
-                        </div>
-                      </>
-                    ) : (
-                      <>
-                        <div className="feature">
-                          <Wind size={18} /> Air Conditioning
-                        </div>
-                        <div className="feature">
-                          <SoapDispenserDroplet size={18} /> Soap
-                        </div>
-                        <div className="feature">
-                          <Car size={18} /> Free Parking
-                        </div>
-                        <div className="feature">
-                          <Coffee size={18} /> Kettle
-                        </div>
-                        <div className="feature">
-                          <ArchiveRestore size={18} /> Cupboard
-                        </div>
-                        <div className="feature">
-                          <Flame size={18} /> Hot Water
-                        </div>
-                      </>
-                    )}
-                  </div>
-                </div>
-                <button
-                  className="calendar-btn"
-                  onClick={() =>
-                    setShowCalendar(showCalendar === room.id ? null : room.id)
-                  }
+      <main className="bg-ivory-50 font-sans">
+        <PageHero
+          image="/IMG_0923.webp"
+          imageAlt="The villa's double-height living room"
+          eyebrow="Rooms & villa"
+          title={
+            <>
+              Rest easy, <span className="italic text-gradient-gold">surrounded by calm</span>
+            </>
+          }
+          subtitle="Book the entire villa for complete privacy, or choose one of our two rooms. Every stay comes with free parking, air conditioning and hot water."
+        >
+          <div className="mt-8 flex flex-wrap gap-3">
+            {ROOM_ORDER.map((id) => {
+              const r = ordered.find((x) => x.id === id);
+              return (
+                <a
+                  key={id}
+                  href={`#${id}`}
+                  className="glass group inline-flex items-center gap-3 rounded-full py-2 pl-4 pr-2 text-sm transition-all duration-300 ease-premium hover:-translate-y-0.5 hover:bg-white/20"
                 >
-                  <Calendar size={20} />{" "}
-                  {showCalendar === room.id ? "Hide" : "View"} Calendar
-                </button>
-                {showCalendar === room.id && (
-                  <RoomCalendar availability={getRoomAvailability(room)} />
-                )}
-              </div>
-            </div>
-          ))
-        ) : (
-          <div className="no-rooms">
-            <p>No rooms available at the moment.</p>
+                  <span className="font-medium">{r?.name ?? (id === "villa" ? "Villa" : id === "family-room" ? "Family Room" : "Double Room")}</span>
+                  {r && (
+                    <span className="rounded-full bg-white/15 px-2.5 py-1 text-xs text-gold-100 lining-nums">
+                      Rs.{formatPrice(r.price)}
+                    </span>
+                  )}
+                  <ChevronDown className="size-4 text-white/60 transition-transform group-hover:translate-y-0.5" />
+                </a>
+              );
+            })}
           </div>
-        )}
+        </PageHero>
+
+        <div className="relative mx-auto max-w-7xl space-y-24 px-5 py-20 sm:px-8 sm:py-28 lg:space-y-32 lg:px-12">
+          {state === "loading" &&
+            Array.from({ length: 2 }).map((_, i) => (
+              <div key={i} className="grid gap-10 lg:grid-cols-2">
+                <div className="skeleton aspect-[4/3] rounded-4xl" />
+                <div className="space-y-4 pt-6">
+                  <div className="skeleton h-4 w-40 rounded" />
+                  <div className="skeleton h-12 w-72 rounded-lg" />
+                  <div className="skeleton h-20 w-full rounded-lg" />
+                  <div className="skeleton h-32 w-full rounded-2xl" />
+                </div>
+              </div>
+            ))}
+
+          {state !== "loading" && ordered.length === 0 && (
+            <div className="rounded-4xl border border-dashed border-sage-300 bg-white/60 px-6 py-20 text-center">
+              <BedDouble className="mx-auto size-10 text-sage-300" />
+              <p className="mt-4 font-display text-2xl text-forest-900">
+                {state === "error" ? "We couldn't load the rooms just now" : "No rooms to show yet"}
+              </p>
+              <p className="mt-2 text-sage-500">Please try again shortly, or message us on WhatsApp.</p>
+              <a
+                href={CONTACT.whatsapp}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="mt-6 inline-flex h-11 items-center gap-2 rounded-full bg-forest-900 px-5 text-sm font-semibold text-white"
+              >
+                <MessageCircle className="size-4" /> Chat on WhatsApp
+              </a>
+            </div>
+          )}
+
+          {ordered.map((room, i) => (
+            <RoomShowcase
+              key={room._id || room.id}
+              room={room}
+              reverse={i % 2 === 1}
+              booked={room.id === "villa" ? villaBooked : room.availability || {}}
+              highlighted={highlight === room.id}
+            />
+          ))}
+        </div>
       </main>
       <Footer />
     </>
+  );
+}
+
+/* ------------------------------------------------------------------------ */
+
+function RoomShowcase({
+  room,
+  reverse,
+  booked,
+  highlighted,
+}: {
+  room: Room & { id: RoomId };
+  reverse: boolean;
+  booked: Record<string, boolean>;
+  highlighted: boolean;
+}) {
+  const [showCalendar, setShowCalendar] = useState(false);
+  const isVilla = room.id === "villa";
+  const images = room.images?.length ? room.images : room.cardImage ? [room.cardImage] : [];
+  const guests = room.guests ?? room.capacity;
+  const price = formatPrice(room.price);
+
+  return (
+    <article
+      id={room.id}
+      aria-labelledby={`${room.id}-title`}
+      className={`relative scroll-mt-24 rounded-[2.5rem] transition-shadow duration-700 ${
+        highlighted ? "shadow-[0_0_0_3px_rgb(16_185_115/0.5),0_30px_80px_-20px_rgb(16_185_115/0.45)]" : ""
+      }`}
+    >
+      <div
+        className={`grid items-start gap-10 *:min-w-0 lg:gap-16 ${
+          reverse
+            ? "lg:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)] lg:[&>*:first-child]:order-2"
+            : "lg:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)]"
+        }`}
+      >
+        {/* gallery */}
+        <Reveal amount={0.15} y={40}>
+          <RoomGallery
+            images={images}
+            name={room.name}
+            badge={
+              isVilla ? (
+                <span className="glass-dark inline-flex items-center gap-1.5 rounded-full bg-forest-950/65! px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.18em] text-gold-200">
+                  Signature stay
+                </span>
+              ) : undefined
+            }
+          />
+        </Reveal>
+
+        {/* details */}
+        <div className="lg:sticky lg:top-24">
+          <Reveal delay={0.05}>
+            <p className="text-xs font-semibold uppercase tracking-[0.28em] text-gold-600">{TAGLINES[room.id]}</p>
+          </Reveal>
+          <Reveal delay={0.1}>
+            <h2 id={`${room.id}-title`} className="mt-3 font-display text-4xl font-medium leading-tight text-forest-900 sm:text-5xl">
+              {isVilla ? "The Entire Villa" : room.name}
+            </h2>
+          </Reveal>
+          <Reveal delay={0.15}>
+            <p className="mt-4 text-base leading-relaxed text-sage-600 sm:text-lg">{room.description}</p>
+          </Reveal>
+
+          {/* key facts */}
+          <Reveal delay={0.2}>
+            <dl className="mt-7 grid grid-cols-[0.8fr_1.4fr_1.1fr] divide-x divide-sage-200 rounded-2xl bg-white py-4 shadow-soft ring-1 ring-forest-900/5 sm:grid-cols-3">
+              <Fact icon={<Users className="size-4" />} label="Guests" value={guests ? String(guests).replace(/\s*guests?$/i, "") : "—"} />
+              <Fact icon={<BedDouble className="size-4" />} label="Beds" value={room.beds ? String(room.beds) : "—"} />
+              <div className="px-4 text-center">
+                <dt className="text-[11px] uppercase tracking-[0.18em] text-sage-500">{isVilla ? "From" : "Per night"}</dt>
+                <dd className="mt-1 font-display text-2xl font-semibold text-forest-900 lining-nums">{price ? `Rs.${price}` : "—"}</dd>
+              </div>
+            </dl>
+          </Reveal>
+
+          {/* amenities */}
+          <Reveal delay={0.25}>
+            <h3 className="mt-9 text-xs font-semibold uppercase tracking-[0.24em] text-sage-500">
+              {isVilla ? "Villa features" : "Room features"}
+            </h3>
+            <ul className="mt-4 grid grid-cols-2 gap-2.5 sm:grid-cols-3">
+              {AMENITIES[room.id].map(({ icon: Icon, label }, j) => (
+                <motion.li
+                  key={label}
+                  initial={{ opacity: 0, y: 10 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: 0.25 + j * 0.035 }}
+                  className="group flex items-center gap-3 rounded-2xl bg-white px-3 py-3 text-sm text-forest-800 shadow-soft ring-1 ring-forest-900/5 transition-all duration-300 ease-premium hover:-translate-y-0.5 hover:ring-leaf-400/40"
+                >
+                  <span className="grid size-9 shrink-0 place-items-center rounded-xl bg-leaf-50 text-leaf-700 transition-colors duration-300 group-hover:bg-leaf-500 group-hover:text-white">
+                    <Icon className="size-4" />
+                  </span>
+                  {label}
+                </motion.li>
+              ))}
+            </ul>
+          </Reveal>
+
+          {/* actions */}
+          <Reveal delay={0.3}>
+            <div className="mt-9 flex flex-wrap gap-3">
+              <Link
+                href={`/Booking?stay=${room.id}`}
+                className="group inline-flex h-12 items-center gap-2 rounded-full bg-forest-900 px-6 text-sm font-semibold text-white shadow-soft transition-all duration-300 ease-premium hover:-translate-y-0.5 hover:bg-forest-800 hover:shadow-glow"
+              >
+                Book {isVilla ? "the villa" : "this room"}
+                <ArrowRight className="size-4 transition-transform duration-300 group-hover:translate-x-1" />
+              </Link>
+              <button
+                onClick={() => setShowCalendar((s) => !s)}
+                aria-expanded={showCalendar}
+                aria-controls={`${room.id}-calendar`}
+                className="inline-flex h-12 items-center gap-2 rounded-full bg-white px-6 text-sm font-semibold text-forest-800 shadow-soft ring-1 ring-forest-900/10 transition-all duration-300 ease-premium hover:-translate-y-0.5 hover:ring-leaf-400/50"
+              >
+                <CalendarDays className="size-4 text-leaf-600" />
+                {showCalendar ? "Hide availability" : "Check availability"}
+                <ChevronDown className={`size-4 transition-transform duration-300 ${showCalendar ? "rotate-180" : ""}`} />
+              </button>
+            </div>
+          </Reveal>
+
+          <AnimatePresence initial={false}>
+            {showCalendar && (
+              <motion.div
+                id={`${room.id}-calendar`}
+                initial={{ height: 0, opacity: 0 }}
+                animate={{ height: "auto", opacity: 1 }}
+                exit={{ height: 0, opacity: 0 }}
+                transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+                className="overflow-hidden"
+              >
+                <div className="pt-5">
+                  <AvailabilityCalendar booked={booked} />
+                  {isVilla && (
+                    <p className="mt-3 text-xs text-sage-500">
+                      The villa shows as booked when either room inside it is taken.
+                    </p>
+                  )}
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+      </div>
+    </article>
+  );
+}
+
+function Fact({ icon, label, value }: { icon: React.ReactNode; label: string; value: string }) {
+  return (
+    <div className="px-4 text-center">
+      <dt className="inline-flex items-center gap-1.5 text-[11px] uppercase tracking-[0.18em] text-sage-500">
+        <span className="text-leaf-600">{icon}</span>
+        {label}
+      </dt>
+      <dd className="mt-1 text-sm font-semibold text-forest-900">{value}</dd>
+    </div>
   );
 }

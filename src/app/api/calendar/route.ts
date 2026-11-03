@@ -1,9 +1,13 @@
 import { NextResponse } from "next/server";
 import { connectToDatabase } from "@/lib/mongodb";
+import { requireRole } from "@/lib/auth";
 import { CalendarEvent } from "@/lib/models";
 import { ObjectId } from "mongodb";
 
 export async function GET(request: Request) {
+  const denied = await requireRole("admin");
+  if (denied) return denied;
+
   try {
     const db = await connectToDatabase();
     const { searchParams } = new URL(request.url);
@@ -34,6 +38,9 @@ export async function GET(request: Request) {
 }
 
 export async function POST(request: Request) {
+  const denied = await requireRole("admin");
+  if (denied) return denied;
+
   try {
     const db = await connectToDatabase();
     const body: CalendarEvent = await request.json();
@@ -56,6 +63,9 @@ export async function POST(request: Request) {
 }
 
 export async function PUT(request: Request) {
+  const denied = await requireRole("admin");
+  if (denied) return denied;
+
   try {
     const db = await connectToDatabase();
     const { searchParams } = new URL(request.url);
@@ -88,6 +98,9 @@ export async function PUT(request: Request) {
 }
 
 export async function DELETE(request: Request) {
+  const denied = await requireRole("admin");
+  if (denied) return denied;
+
   try {
     const db = await connectToDatabase();
     const { searchParams } = new URL(request.url);

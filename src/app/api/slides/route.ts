@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { connectToDatabase } from "@/lib/mongodb";
+import { requireRole } from "@/lib/auth";
 
 export async function GET() {
   try {
@@ -20,6 +21,9 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
+  const denied = await requireRole("admin");
+  if (denied) return denied;
+
   try {
     const db = await connectToDatabase();
     const body = await request.json();

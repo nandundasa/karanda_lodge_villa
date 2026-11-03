@@ -1,10 +1,253 @@
-html,
-body {
-  max-width: 100vw;
-  overflow-x: hidden;
+@import "tailwindcss";
+
+/* ==========================================================================
+   Karanda Lodge — "Modern Premium Green" theme (Tailwind v4, CSS-first)
+   Tailwind v4 reads theme tokens from @theme below; there is no
+   tailwind.config.ts. Every token becomes a utility, e.g. `bg-forest-800`,
+   `text-gold-400`, `font-display`, `shadow-glow`, `animate-fade-up`.
+   ========================================================================== */
+
+/* Fonts reference variables that next/font sets on <body>, so they must be
+   `inline` (resolved where used, not on :root). */
+@theme inline {
+  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-cormorant), "Cormorant Garamond", ui-serif, Georgia,
+    serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
 }
 
-body {
-  margin: 0;
-  padding: 0;
+@theme {
+  /* --- Forest: deep, luxurious greens (primary brand) -------------------- */
+  --color-forest-50: #eef6f1;
+  --color-forest-100: #d5eadd;
+  --color-forest-200: #aed5bf;
+  --color-forest-300: #7fb99a;
+  --color-forest-400: #529a75;
+  --color-forest-500: #357e5a;
+  --color-forest-600: #256548;
+  --color-forest-700: #1d513b;
+  --color-forest-800: #173f2f;
+  --color-forest-900: #112f23;
+  --color-forest-950: #0a1d16;
+
+  /* --- Leaf: vivid emerald for actions, focus and glow ------------------- */
+  --color-leaf-50: #ecfdf4;
+  --color-leaf-100: #d1fae4;
+  --color-leaf-200: #a6f4cc;
+  --color-leaf-300: #6ce9ae;
+  --color-leaf-400: #34d58d;
+  --color-leaf-500: #10b973;
+  --color-leaf-600: #05965d;
+  --color-leaf-700: #04784d;
+  --color-leaf-800: #075f3f;
+  --color-leaf-900: #074e35;
+
+  /* --- Sage: soft muted green-greys for surfaces and borders ------------- */
+  --color-sage-50: #f5f7f4;
+  --color-sage-100: #e8ede6;
+  --color-sage-200: #d3dccf;
+  --color-sage-300: #b4c3ae;
+  --color-sage-400: #91a589;
+  --color-sage-500: #74896c;
+  --color-sage-600: #5b6d55;
+  --color-sage-700: #495745;
+  --color-sage-800: #3c473a;
+  --color-sage-900: #333c31;
+
+  /* --- Ivory: warm whites / off-whites ----------------------------------- */
+  --color-ivory-50: #fdfcf8;
+  --color-ivory-100: #faf7ef;
+  --color-ivory-200: #f3eddc;
+  --color-ivory-300: #e9dfc3;
+
+  /* --- Gold: premium accent (use sparingly) ------------------------------ */
+  --color-gold-100: #f8efd3;
+  --color-gold-200: #f0dca3;
+  --color-gold-300: #e6c56f;
+  --color-gold-400: #d9ab45;
+  --color-gold-500: #c3902c;
+  --color-gold-600: #a37223;
+  --color-gold-700: #82571f;
+
+  /* --- Earth: wood / clay tones ------------------------------------------ */
+  --color-earth-300: #d2b394;
+  --color-earth-400: #b98f68;
+  --color-earth-500: #9c7149;
+  --color-earth-600: #7d5839;
+  --color-earth-700: #5f432d;
+
+  /* --- Radii & shadows --------------------------------------------------- */
+  --radius-4xl: 2rem;
+  --shadow-soft: 0 1px 2px rgb(17 47 35 / 0.04), 0 8px 24px -6px rgb(17 47 35 / 0.1);
+  --shadow-lift: 0 2px 4px rgb(17 47 35 / 0.05), 0 24px 48px -12px rgb(17 47 35 / 0.22);
+  --shadow-glow: 0 0 0 1px rgb(52 213 141 / 0.25), 0 8px 32px -4px rgb(16 185 115 / 0.45);
+  --shadow-glow-gold: 0 0 0 1px rgb(217 171 69 / 0.3), 0 8px 32px -4px rgb(217 171 69 / 0.45);
+
+  /* --- Easing ------------------------------------------------------------ */
+  --ease-premium: cubic-bezier(0.22, 1, 0.36, 1);
+
+  /* --- Animations (use as `animate-*`) ----------------------------------- */
+  --animate-fade-in: fade-in 0.6s var(--ease-premium) both;
+  --animate-fade-up: fade-up 0.8s var(--ease-premium) both;
+  --animate-scale-in: scale-in 0.4s var(--ease-premium) both;
+  --animate-float: float 6s ease-in-out infinite;
+  --animate-shimmer: shimmer 2.2s linear infinite;
+  --animate-glow-pulse: glow-pulse 2.4s ease-in-out infinite;
+  --animate-ken-burns: ken-burns 14s ease-out both;
+  --animate-scroll-cue: scroll-cue 1.8s var(--ease-premium) infinite;
+
+  @keyframes fade-in {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+  @keyframes fade-up {
+    from { opacity: 0; transform: translateY(24px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes scale-in {
+    from { opacity: 0; transform: scale(0.96); }
+    to { opacity: 1; transform: scale(1); }
+  }
+  @keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-8px); }
+  }
+  @keyframes shimmer {
+    from { background-position: -200% 0; }
+    to { background-position: 200% 0; }
+  }
+  @keyframes glow-pulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgb(16 185 115 / 0.45); }
+    50% { box-shadow: 0 0 0 10px rgb(16 185 115 / 0); }
+  }
+  @keyframes ken-burns {
+    from { transform: scale(1.12); }
+    to { transform: scale(1); }
+  }
+  @keyframes scroll-cue {
+    0% { transform: translateY(0); opacity: 0; }
+    30% { opacity: 1; }
+    100% { transform: translateY(14px); opacity: 0; }
+  }
+}
+
+/* Welcome screen already seen this session (set by the inline <head> script) */
+html[data-welcome-seen] [data-welcome] {
+  display: none !important;
+}
+
+/* Welcome screen failsafe: hide the intro even if JavaScript never runs */
+@keyframes kl-welcome-failsafe {
+  to {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+  }
+}
+
+/* Marching-ants dashed border (SVG stroke) used by drag-and-drop zones */
+@keyframes kl-dash {
+  to {
+    stroke-dashoffset: -16;
+  }
+}
+
+/* ==========================================================================
+   Reusable component utilities (work with variants: `hover:glass` etc.)
+   ========================================================================== */
+
+/* Light frosted glass — over images or colored backgrounds */
+@utility glass {
+  background-color: rgb(255 255 255 / 0.12);
+  border: 1px solid rgb(255 255 255 / 0.22);
+  backdrop-filter: blur(16px) saturate(160%);
+  -webkit-backdrop-filter: blur(16px) saturate(160%);
+}
+
+/* Dark frosted glass — deep forest tint */
+@utility glass-dark {
+  background-color: rgb(10 29 22 / 0.45);
+  border: 1px solid rgb(255 255 255 / 0.1);
+  backdrop-filter: blur(18px) saturate(150%);
+  -webkit-backdrop-filter: blur(18px) saturate(150%);
+}
+
+/* Glass for light app surfaces (admin top nav, sticky bars) */
+@utility glass-light {
+  background-color: rgb(253 252 248 / 0.92);
+  border-bottom: 1px solid rgb(23 63 47 / 0.08);
+  backdrop-filter: blur(14px) saturate(180%);
+  -webkit-backdrop-filter: blur(14px) saturate(180%);
+}
+
+/* Gold gradient text for highlights */
+@utility text-gradient-gold {
+  background-image: linear-gradient(100deg, #f0dca3 0%, #d9ab45 45%, #f8efd3 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* Loading skeleton shimmer */
+@utility skeleton {
+  background-image: linear-gradient(
+    90deg,
+    var(--color-sage-100) 0%,
+    var(--color-sage-50) 50%,
+    var(--color-sage-100) 100%
+  );
+  background-size: 200% 100%;
+  animation: var(--animate-shimmer);
+}
+
+/* ==========================================================================
+   Base
+   ========================================================================== */
+
+@layer base {
+  /* clip (not hidden): stops sideways scroll without turning <body> into a
+     scroll container, which would break every position: sticky element */
+  html,
+  body {
+    max-width: 100vw;
+    overflow-x: clip;
+  }
+
+  body {
+    margin: 0;
+    padding: 0;
+    font-family: var(--font-sans);
+    background-color: var(--color-ivory-50);
+    color: var(--color-forest-950);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  ::selection {
+    background-color: var(--color-leaf-200);
+    color: var(--color-forest-950);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-leaf-500);
+    outline-offset: 2px;
+  }
+
+  /* Preflight makes buttons inherit the default cursor; restore the pointer */
+  button:not(:disabled),
+  [role="button"]:not([aria-disabled="true"]) {
+    cursor: pointer;
+  }
+}
+
+/* Respect users who ask for less motion (CSS animations; Motion is configured
+   with reducedMotion="user" in the providers). */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }

@@ -1,107 +1,198 @@
 "use client";
-import { useEffect, useState, useCallback, useRef } from "react";
+import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from "react";
 import Image from "next/image";
-import "./WelcomeScreen.css";
+import { usePathname } from "next/navigation";
+import { AnimatePresence, motion, type Variants } from "motion/react";
 
+const DURATION = 3600; // ms before the intro dismisses itself
+const TITLE = "Karanda Lodge";
+
+/** sessionStorage key: the intro plays once per browser tab session */
+export const WELCOME_KEY = "hasSeenWelcome";
+
+function hasSeenWelcome() {
+  try {
+    return sessionStorage.getItem(WELCOME_KEY) !== null;
+  } catch {
+    return false; // storage blocked (e.g. some private modes): just show it
+  }
+}
+function markWelcomeSeen() {
+  try {
+    sessionStorage.setItem(WELCOME_KEY, "true");
+  } catch {}
+}
+const noSubscribe = () => () => {};
+
+/**
+ * Runs in <head> before first paint (see layout.tsx). The overlay is rendered
+ * on the server, which can't read sessionStorage, so this hides it instantly
+ * for visitors who've already seen it, with no flash.
+ */
+export const WELCOME_SEEN_SCRIPT = `try{if(sessionStorage.getItem(${JSON.stringify(WELCOME_KEY)})!==null)document.documentElement.setAttribute("data-welcome-seen","")}catch(e){}`;
+
+const letters: Variants = {
+  hidden: {},
+  show: { transition: { staggerChildren: 0.045, delayChildren: 0.75 } },
+};
+const letter: Variants = {
+  hidden: { opacity: 0, y: 28, filter: "blur(8px)" },
+  show: { opacity: 1, y: 0, filter: "blur(0px)", transition: { duration: 0.7, ease: [0.22, 1, 0.36, 1] } },
+};
+const fadeUp = (delay: number) => ({
+  initial: { opacity: 0, y: 14 },
+  animate: { opacity: 1, y: 0 },
+  transition: { delay, duration: 0.8, ease: [0.22, 1, 0.36, 1] as const },
+});
+
+/**
+ * Full-screen intro, shown on the first visit per session (sessionStorage
+ * "hasSeenWelcome"). Rendered on the server so it covers the page from the
+ * first paint; a CSS failsafe fades it out even if JavaScript never runs.
+ */
 export default function WelcomeScreen() {
-  const [visible, setVisible] = useState(false);
-  const [exiting, setExiting] = useState(false);
-  const containerRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    setVisible(true);
-    // Lock body scroll while welcome is showing
-    document.body.style.overflow = "hidden";
-  }, []);
+  const pathname = usePathname();
+  const hidden = pathname?.startsWith("/admin") || pathname?.startsWith("/manager");
+  // false on the server and during hydration, then the real value on the client
+  const seen = useSyncExternalStore(noSubscribe, hasSeenWelcome, () => false);
+  const [open, setOpen] = useState(true);
+  const show = open && !hidden && !seen;
+  const ref = useRef<HTMLDivElement>(null);
 
   const dismiss = useCallback(() => {
-    if (exiting) return;
-    setExiting(true);
-    // Wait for exit animation to complete
-    setTimeout(() => {
-      setVisible(false);
-      document.body.style.overflow = "unset";
-    }, 800);
-  }, [exiting]);
+    markWelcomeSeen();
+    setOpen(false);
+  }, []);
 
   useEffect(() => {
-    if (!visible || exiting) return;
-    // Auto-dismiss after 4 seconds
-    const timer = setTimeout(dismiss, 4000);
-    return () => clearTimeout(timer);
-  }, [visible, exiting, dismiss]);
-
-  // Keyboard: Enter or Escape to dismiss
-  useEffect(() => {
-    if (!visible) return;
-    const handleKey = (e: KeyboardEvent) => {
-      if (e.key === "Enter" || e.key === "Escape") dismiss();
+    if (!show) return;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    ref.current?.focus();
+    const timer = setTimeout(dismiss, DURATION);
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Enter" || e.key === "Escape" || e.key === " ") dismiss();
     };
-    window.addEventListener("keydown", handleKey);
-    return () => window.removeEventListener("keydown", handleKey);
-  }, [visible, dismiss]);
+    window.addEventListener("keydown", onKey);
+    return () => {
+      clearTimeout(timer);
+      window.removeEventListener("keydown", onKey);
+      document.body.style.overflow = prev;
+    };
+  }, [show, dismiss]);
 
-  // Focus trap
-  useEffect(() => {
-    if (visible && containerRef.current) {
-      containerRef.current.focus();
-    }
-  }, [visible]);
-
-  if (!visible) return null;
+  if (hidden) return null;
 
   return (
-    <div
-      ref={containerRef}
-      className={`welcome-overlay ${exiting ? "welcome-exit" : ""}`}
-      onClick={dismiss}
-      role="dialog"
-      aria-modal="true"
-      aria-label="Welcome to Karanda Lodge"
-      tabIndex={-1}
-    >
-      {/* Ambient background particles */}
-      <div className="welcome-particles" aria-hidden="true">
-        <div className="particle particle-1" />
-        <div className="particle particle-2" />
-        <div className="particle particle-3" />
-        <div className="particle particle-4" />
-        <div className="particle particle-5" />
-        <div className="particle particle-6" />
-      </div>
-
-      <div className="welcome-content">
-        {/* Logo with glow ring */}
-        <div className="welcome-logo-wrapper">
-          <div className="welcome-logo-glow" aria-hidden="true" />
-          <div className="welcome-logo-ring" aria-hidden="true" />
-          <div className="welcome-logo-ring-2" aria-hidden="true" />
-          <Image
-            src="/logo.png"
-            alt="Karanda Lodge Logo"
-            width={180}
-            height={180}
-            className="welcome-logo"
-            priority
+    <AnimatePresence>
+      {show && (
+        <motion.div
+          ref={ref}
+          key="welcome"
+          data-welcome=""
+          role="dialog"
+          aria-modal="true"
+          aria-label="Welcome to Karanda Lodge"
+          tabIndex={-1}
+          onClick={dismiss}
+          initial={false}
+          exit={{ opacity: 0, transition: { duration: 0.9, ease: [0.65, 0, 0.35, 1] } }}
+          style={{ animation: "kl-welcome-failsafe 0.8s ease 6s forwards" }}
+          className="fixed inset-0 z-[10000] flex cursor-pointer items-center justify-center overflow-hidden bg-forest-950 font-sans text-white outline-none"
+        >
+          {/* layered background */}
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_50%_42%,var(--color-forest-700)_0%,var(--color-forest-900)_38%,var(--color-forest-950)_75%)]" />
+          <motion.div
+            aria-hidden
+            className="absolute left-1/2 top-[42%] size-[640px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-leaf-500/20 blur-[120px]"
+            initial={{ scale: 0.6, opacity: 0 }}
+            animate={{ scale: [0.6, 1.1, 1], opacity: [0, 1, 0.8] }}
+            transition={{ duration: 2.4, ease: "easeOut" }}
           />
-        </div>
+          <div aria-hidden className="absolute -bottom-40 -right-32 size-[460px] rounded-full bg-gold-400/10 blur-[120px]" />
+          <div
+            aria-hidden
+            className="absolute inset-0 bg-[radial-gradient(rgb(255_255_255/0.07)_1px,transparent_1px)] [background-size:26px_26px] [mask-image:radial-gradient(ellipse_at_center,black_20%,transparent_70%)]"
+          />
 
-        {/* Text */}
-        <h1 className="welcome-title">Karanda Lodge</h1>
-        <div className="welcome-divider" aria-hidden="true" />
-        <p className="welcome-tagline">
-          Your Sanctuary in Nature
-        </p>
-        <p className="welcome-location">
-          Anuradhapura, Sri Lanka
-        </p>
+          {/* content (scales away on exit) */}
+          <motion.div
+            className="relative flex flex-col items-center px-6 text-center"
+            exit={{ scale: 1.06, opacity: 0, filter: "blur(10px)", transition: { duration: 0.7 } }}
+          >
+            {/* logo with expanding rings */}
+            <div className="relative grid size-40 place-items-center sm:size-48">
+              {[0, 0.6].map((delay) => (
+                <motion.span
+                  key={delay}
+                  aria-hidden
+                  className="absolute inset-0 rounded-full border border-leaf-300/40"
+                  initial={{ scale: 0.6, opacity: 0 }}
+                  animate={{ scale: [0.6, 1.45], opacity: [0, 0.7, 0] }}
+                  transition={{ duration: 2.6, delay: 0.5 + delay, repeat: Infinity, ease: "easeOut" }}
+                />
+              ))}
+              <motion.span
+                aria-hidden
+                className="absolute inset-4 rounded-full bg-white/5 ring-1 ring-white/10 backdrop-blur-sm"
+                initial={{ scale: 0.4, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                transition={{ duration: 0.9, delay: 0.15, ease: [0.22, 1, 0.36, 1] }}
+              />
+              <motion.div
+                initial={{ scale: 0.55, rotate: -24, opacity: 0, filter: "blur(14px)" }}
+                animate={{ scale: 1, rotate: 0, opacity: 1, filter: "blur(0px)" }}
+                transition={{ duration: 1.3, delay: 0.25, ease: [0.22, 1, 0.36, 1] }}
+                className="relative drop-shadow-[0_0_28px_rgb(108_233_174/0.55)]"
+              >
+                <Image src="/logo.png" alt="" width={112} height={112} priority className="size-24 sm:size-28" />
+              </motion.div>
+            </div>
 
-        {/* Subtle enter hint */}
-        <span className="welcome-hint">
-          Click anywhere or press Enter to continue
-          <span className="welcome-hint-arrow">↓</span>
-        </span>
-      </div>
-    </div>
+            {/* title, letter by letter */}
+            <motion.h1
+              variants={letters}
+              initial="hidden"
+              animate="show"
+              aria-label={TITLE}
+              className="mt-8 font-display text-5xl font-medium tracking-tight sm:text-7xl"
+            >
+              {TITLE.split("").map((ch, i) => (
+                <motion.span key={i} variants={letter} aria-hidden className="inline-block whitespace-pre">
+                  {ch}
+                </motion.span>
+              ))}
+            </motion.h1>
+
+            <motion.span
+              aria-hidden
+              className="mt-5 h-px w-24 bg-gradient-to-r from-transparent via-gold-300 to-transparent"
+              initial={{ scaleX: 0, opacity: 0 }}
+              animate={{ scaleX: 1, opacity: 1 }}
+              transition={{ delay: 1.35, duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
+            />
+            <motion.p {...fadeUp(1.5)} className="mt-5 text-xs font-medium uppercase tracking-[0.38em] text-leaf-200/90 sm:text-sm">
+              Your sanctuary in nature
+            </motion.p>
+            <motion.p {...fadeUp(1.7)} className="mt-2 font-display text-lg italic text-gold-200/80">
+              Anuradhapura, Sri Lanka
+            </motion.p>
+          </motion.div>
+
+          {/* progress + skip hint */}
+          <motion.div {...fadeUp(1.9)} className="absolute inset-x-0 bottom-10 flex flex-col items-center gap-3">
+            <span className="h-0.5 w-40 overflow-hidden rounded-full bg-white/10">
+              <motion.span
+                className="block h-full origin-left bg-gradient-to-r from-leaf-400 to-gold-300"
+                initial={{ scaleX: 0 }}
+                animate={{ scaleX: 1 }}
+                transition={{ duration: DURATION / 1000, ease: "linear" }}
+              />
+            </span>
+            <span className="text-[11px] uppercase tracking-[0.24em] text-white/35">Tap or press Enter to continue</span>
+          </motion.div>
+        </motion.div>
+      )}
+    </AnimatePresence>
   );
 }

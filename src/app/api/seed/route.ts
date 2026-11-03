@@ -1,7 +1,11 @@
 import { NextResponse } from "next/server";
 import { connectToDatabase } from "@/lib/mongodb";
+import { requireRole } from "@/lib/auth";
 
-export async function GET(request: Request) {
+export async function GET() {
+  const denied = await requireRole("admin");
+  if (denied) return denied;
+
   try {
     const db = await connectToDatabase();
 
