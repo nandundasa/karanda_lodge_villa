@@ -110,33 +110,64 @@ export function availabilityMaps(byRoom: Record<string, StayBlock[]>): Record<st
   return out;
 }
 
+/** Thrown when an extension can't be applied (bad id, gap, or clash) */
+export class BlockError extends Error {}
+
 /**
  * Apply one save: `finalDates` is the complete set of nights the room should
  * own afterwards.
  *  - Removed nights are taken out of their block. A block that becomes empty
  *    is deleted; one split in two keeps its id on the earlier part (so its ID
  *    photos stay with it) and the later part gets a new id.
- *  - Added nights become NEW blocks, one per consecutive run, even when they
- *    touch an existing block. That's what keeps back-to-back guests separate.
+ *  - `extensions` ({ stayId: nights }) adds nights to an EXISTING block,
+ *    before or after it, keeping its id (and ID photos). The extended stay
+ *    must remain one continuous run.
+ *  - Any other added nights become NEW blocks, one per consecutive run, even
+ *    when they touch an existing block. That keeps back-to-back guests separate.
  */
 export function applyBookedDates(
   prev: StayBlock[],
   finalDates: Iterable<string>,
   newId: () => string,
-  now: Date = new Date()
+  now: Date = new Date(),
+  extensions: Record<string, string[]> = {}
 ): StayBlock[] {
   const final = new Set(finalDates);
-  const next: StayBlock[] = [];
+  const existing = ownDates(prev);
 
+  // Validate extensions before changing anything
+  const extended = new Set<string>();
+  for (const [stayId, nights] of Object.entries(extensions)) {
+    if (!nights.length) continue;
+    if (!prev.some((b) => b.stayId === stayId)) throw new BlockError(`Stay ${stayId} no longer exists`);
+    for (const d of nights) {
+      if (!DATE_RE.test(d)) throw new BlockError(`Invalid date ${d}`);
+      if (existing.has(d)) throw new BlockError(`${d} is already booked by another stay`);
+      if (!final.has(d)) throw new BlockError(`${d} isn't booked in this save`);
+      if (extended.has(d)) throw new BlockError(`${d} is used by two extensions`);
+      extended.add(d);
+    }
+  }
+
+  const next: StayBlock[] = [];
   for (const block of prev) {
-    const runs = groupConsecutive(block.dates.filter((d) => final.has(d)));
-    runs.forEach((dates, i) =>
+    const kept = block.dates.filter((d) => final.has(d));
+    const extra = extensions[block.stayId] ?? [];
+    if (extra.length) {
+      // An extended stay keeps its id and must stay one continuous run
+      const runs = groupConsecutive([...kept, ...extra]);
+      if (runs.length !== 1) {
+        throw new BlockError("An extension must connect directly to the start or end of its stay");
+      }
+      next.push({ ...block, dates: runs[0] });
+      continue;
+    }
+    groupConsecutive(kept).forEach((dates, i) =>
       next.push(i === 0 ? { ...block, dates } : { stayId: newId(), dates, createdAt: now })
     );
   }
 
-  const existing = ownDates(prev);
-  const added = [...final].filter((d) => !existing.has(d));
+  const added = [...final].filter((d) => !existing.has(d) && !extended.has(d));
   for (const dates of groupConsecutive(added)) next.push({ stayId: newId(), dates, createdAt: now });
 
   return next.sort((a, b) => a.dates[0].localeCompare(b.dates[0]));

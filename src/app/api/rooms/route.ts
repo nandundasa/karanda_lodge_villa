@@ -7,6 +7,8 @@ import {
   ROOM_IDS,
   VILLA_ID,
   VILLA_ROOMS,
+  BlockError,
+  addDays,
   applyBookedDates,
   availabilityMaps,
   ownDates,
@@ -101,7 +103,9 @@ export async function POST(request: Request) {
  * Apply one admin save of booked nights. Each room in `updates` carries its
  * complete set of own booked nights (`bookedDates`, or the legacy
  * `availability` map). Nights new in this save become new stay blocks, even
- * when they touch an existing stay; removed nights shrink or delete blocks.
+ * when they touch an existing stay, unless they're listed in `extensions`
+ * ([{ stayId, dates }]), which adds them to that existing stay instead.
+ * Removed nights shrink or delete blocks.
  * Returns an error response, or null on success.
  */
 async function saveBookings(
@@ -110,6 +114,7 @@ async function saveBookings(
 ): Promise<NextResponse | null> {
   // Parse + validate the requested sets
   const requested = new Map<string, Set<string>>();
+  const extensions = new Map<string, Record<string, string[]>>();
   for (const u of updates) {
     const id = u.id;
     if (typeof id !== "string" || !(ROOM_IDS as readonly string[]).includes(id)) {
@@ -124,6 +129,25 @@ async function saveBookings(
       return NextResponse.json({ error: `Invalid dates for ${id}` }, { status: 400 });
     }
     requested.set(id, new Set(list as string[]));
+
+    if (u.extensions !== undefined) {
+      if (!Array.isArray(u.extensions)) {
+        return NextResponse.json({ error: `Invalid extensions for ${id}` }, { status: 400 });
+      }
+      const ext: Record<string, string[]> = {};
+      for (const e of u.extensions as { stayId?: unknown; dates?: unknown }[]) {
+        if (
+          !e ||
+          typeof e.stayId !== "string" ||
+          !Array.isArray(e.dates) ||
+          !e.dates.every((d) => typeof d === "string" && DATE_RE.test(d))
+        ) {
+          return NextResponse.json({ error: `Invalid extensions for ${id}` }, { status: 400 });
+        }
+        ext[e.stayId] = [...(ext[e.stayId] ?? []), ...(e.dates as string[])];
+      }
+      extensions.set(id, ext);
+    }
   }
 
   const docs = (await db
@@ -148,6 +172,19 @@ async function saveBookings(
     // clients sent them in the room sets too).
     finalOwn.set(roomId, new Set([...req].filter((d) => !finalVilla.has(d))));
   }
+  // A room's stay can't be extended onto nights the whole villa is booked
+  for (const roomId of VILLA_ROOMS) {
+    const clash = Object.values(extensions.get(roomId) ?? {})
+      .flat()
+      .filter((d) => finalVilla.has(d))
+      .sort();
+    if (clash.length) {
+      return NextResponse.json(
+        { error: `Can't extend into nights the whole villa is booked: ${roomId} (${clash.join(", ")})`, conflicts: [{ room: roomId, dates: clash }] },
+        { status: 409 }
+      );
+    }
+  }
   if (conflicts.length) {
     const list = conflicts.map((c) => `${c.room} (${c.dates.join(", ")})`).join("; ");
     return NextResponse.json(
@@ -158,8 +195,19 @@ async function saveBookings(
 
   const now = new Date();
   const next: Record<string, StayBlock[]> = {};
-  for (const roomId of ROOM_IDS) {
-    next[roomId] = applyBookedDates(prev[roomId] ?? [], finalOwn.get(roomId) ?? prevOwn(roomId), newStayId, now);
+  try {
+    for (const roomId of ROOM_IDS) {
+      next[roomId] = applyBookedDates(
+        prev[roomId] ?? [],
+        finalOwn.get(roomId) ?? prevOwn(roomId),
+        newStayId,
+        now,
+        extensions.get(roomId)
+      );
+    }
+  } catch (e) {
+    if (e instanceof BlockError) return NextResponse.json({ error: e.message }, { status: 400 });
+    throw e;
   }
   const maps = availabilityMaps(next);
 
@@ -171,6 +219,25 @@ async function saveBookings(
       { id: roomId },
       { $set: { blocks: next[roomId], availability: maps[roomId], updatedAt: now } }
     );
+  }
+
+  // Keep the stored dates on guest-ID records in step with stays whose nights
+  // changed (e.g. extended), so they never go stale. Ids are unchanged.
+  for (const roomId of ROOM_IDS) {
+    for (const block of next[roomId]) {
+      const before = (prev[roomId] ?? []).find((b) => b.stayId === block.stayId);
+      if (!before || before.dates.join() === block.dates.join()) continue;
+      await db.collection("bookings").updateOne(
+        { stayId: block.stayId },
+        {
+          $set: {
+            checkInDate: new Date(`${block.dates[0]}T00:00:00Z`),
+            checkOutDate: new Date(`${addDays(block.dates[block.dates.length - 1], 1)}T00:00:00Z`),
+            updatedAt: now,
+          },
+        }
+      );
+    }
   }
   return null;
 }
