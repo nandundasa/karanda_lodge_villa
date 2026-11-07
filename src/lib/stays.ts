@@ -26,14 +26,8 @@ export function todayAtLodge(): string {
 
 export type RoomAvailability = RoomDoc;
 
-/**
- * Pure (browser-safe): turn rooms' booking blocks into current and upcoming
- * stays (check-out today or later), soonest first.
- */
-export function deriveStays(
-  rooms: RoomAvailability[],
-  today: string = todayAtLodge()
-): Stay[] {
+/** Pure (browser-safe): every stay in the rooms' booking blocks, unsorted. */
+function allStays(rooms: RoomAvailability[]): Stay[] {
   const known = rooms.filter((r) => (ROOM_IDS as readonly string[]).includes(r.id));
   const byRoom = resolveBlocks(known);
   const stays: Stay[] = [];
@@ -42,29 +36,56 @@ export function deriveStays(
     for (const block of byRoom[room.id] ?? []) {
       // Blocks are contiguous by construction; split defensively if not.
       groupConsecutive(block.dates).forEach((nights, i) => {
-        const checkIn = nights[0];
-        const checkOut = addDays(nights[nights.length - 1], 1);
-        if (checkOut < today) return; // finished stays are hidden
         stays.push({
           stayId: i === 0 ? block.stayId : `${block.stayId}~${i}`,
           roomId: room.id,
           roomName: room.name || room.id,
-          checkIn,
-          checkOut,
+          checkIn: nights[0],
+          checkOut: addDays(nights[nights.length - 1], 1),
           nights: nights.length,
         });
       });
     }
   }
+  return stays;
+}
 
-  return stays.sort(
-    (a, b) =>
-      a.checkIn.localeCompare(b.checkIn) || a.roomId.localeCompare(b.roomId)
+/**
+ * Pure (browser-safe): current and upcoming stays (check-out today or later),
+ * soonest first.
+ */
+export function deriveStays(
+  rooms: RoomAvailability[],
+  today: string = todayAtLodge()
+): Stay[] {
+  return allStays(rooms)
+    .filter((s) => s.checkOut >= today)
+    .sort(bySoonestCheckIn);
+}
+
+/**
+ * Pure (browser-safe): finished stays (check-out before today), most recent
+ * check-out first.
+ */
+export function derivePastStays(
+  rooms: RoomAvailability[],
+  today: string = todayAtLodge()
+): Stay[] {
+  return allStays(rooms)
+    .filter((s) => s.checkOut < today)
+    .sort(byRecentCheckOut);
+}
+
+/** Sort order for history lists: latest check-out first. */
+export function byRecentCheckOut(a: Stay, b: Stay): number {
+  return (
+    b.checkOut.localeCompare(a.checkOut) ||
+    b.checkIn.localeCompare(a.checkIn) ||
+    a.roomId.localeCompare(b.roomId)
   );
 }
 
-/** Current and upcoming stays from the database, soonest first. */
-export async function getActiveStays(db: Db): Promise<Stay[]> {
+async function loadRooms(db: Db): Promise<RoomAvailability[]> {
   const rooms = await db
     .collection("rooms")
     .find(
@@ -72,7 +93,31 @@ export async function getActiveStays(db: Db): Promise<Stay[]> {
       { projection: { id: 1, name: 1, availability: 1, blocks: 1 } }
     )
     .toArray();
-  return deriveStays(rooms as unknown as RoomAvailability[]);
+  return rooms as unknown as RoomAvailability[];
+}
+
+/** Current and upcoming stays from the database, soonest first. */
+export async function getActiveStays(db: Db): Promise<Stay[]> {
+  return deriveStays(await loadRooms(db));
+}
+
+/** Finished stays from the database, most recent check-out first. */
+export async function getPastStays(db: Db): Promise<Stay[]> {
+  return derivePastStays(await loadRooms(db));
+}
+
+/** Both lists from a single read of the rooms. */
+export async function getAllStays(
+  db: Db,
+  today: string = todayAtLodge()
+): Promise<{ active: Stay[]; past: Stay[] }> {
+  const rooms = await loadRooms(db);
+  return { active: deriveStays(rooms, today), past: derivePastStays(rooms, today) };
+}
+
+/** Sort order for current/upcoming lists: soonest check-in first. */
+export function bySoonestCheckIn(a: Stay, b: Stay): number {
+  return a.checkIn.localeCompare(b.checkIn) || a.roomId.localeCompare(b.roomId);
 }
 
 export type StayPhase = "in-house" | "arriving" | "departing" | "upcoming";
