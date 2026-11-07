@@ -1,26 +1,21 @@
 import type { Db } from "mongodb";
+import { ROOM_IDS, addDays, groupConsecutive, resolveBlocks, type RoomDoc } from "./blocks";
 
 /**
- * The admin records reservations as booked dates per room
- * (rooms.availability = { "YYYY-MM-DD": true }). This turns those dates into
- * stays: each run of consecutive booked nights in a room is one stay.
- *
- * Booking the Villa also marks Double Room + Family Room as booked, so any
- * date booked on the Villa is attributed to the Villa only.
+ * Stays come from booking blocks (see blocks.ts): one block = one stay with
+ * its own unique stayId, so back-to-back guests in the same room are separate
+ * stays. Rooms saved before blocks existed are converted on the fly.
+ * A villa stay is stored on the villa only (it isn't duplicated into the rooms).
  */
 
 export interface Stay {
-  stayId: string; // `${roomId}_${checkIn}`
+  stayId: string; // the block's unique id (legacy blocks: `${roomId}_${checkIn}`)
   roomId: string;
   roomName: string;
   checkIn: string; // YYYY-MM-DD (first night)
   checkOut: string; // YYYY-MM-DD (morning after last night)
   nights: number;
 }
-
-const ROOM_IDS = ["villa", "double-room", "family-room"] as const;
-const VILLA_ID = "villa";
-const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
 
 /** Today's date at the lodge, independent of the server's timezone. */
 export function todayAtLodge(): string {
@@ -29,64 +24,35 @@ export function todayAtLodge(): string {
   );
 }
 
-function addDays(date: string, days: number): string {
-  const d = new Date(`${date}T00:00:00Z`);
-  d.setUTCDate(d.getUTCDate() + days);
-  return d.toISOString().slice(0, 10);
-}
-
-function groupConsecutive(dates: string[]): string[][] {
-  const sorted = [...dates].sort();
-  const groups: string[][] = [];
-  for (const date of sorted) {
-    const last = groups[groups.length - 1];
-    if (last && addDays(last[last.length - 1], 1) === date) last.push(date);
-    else groups.push([date]);
-  }
-  return groups;
-}
-
-export type RoomAvailability = {
-  id: string;
-  name?: string;
-  availability?: Record<string, boolean> | null;
-};
+export type RoomAvailability = RoomDoc;
 
 /**
- * Pure (browser-safe) version: turn rooms' booked dates into current and
- * upcoming stays (check-out today or later), soonest first.
+ * Pure (browser-safe): turn rooms' booking blocks into current and upcoming
+ * stays (check-out today or later), soonest first.
  */
 export function deriveStays(
   rooms: RoomAvailability[],
   today: string = todayAtLodge()
 ): Stay[] {
-  const bookedDates = (availability: unknown): string[] =>
-    Object.entries((availability as Record<string, boolean>) || {})
-      .filter(([date, booked]) => booked === true && DATE_RE.test(date))
-      .map(([date]) => date);
-
-  const known = rooms.filter((r) =>
-    (ROOM_IDS as readonly string[]).includes(r.id)
-  );
-  const villa = known.find((r) => r.id === VILLA_ID);
-  const villaDates = new Set(villa ? bookedDates(villa.availability) : []);
+  const known = rooms.filter((r) => (ROOM_IDS as readonly string[]).includes(r.id));
+  const byRoom = resolveBlocks(known);
   const stays: Stay[] = [];
 
   for (const room of known) {
-    let dates = bookedDates(room.availability);
-    if (room.id !== VILLA_ID) dates = dates.filter((d) => !villaDates.has(d));
-
-    for (const nights of groupConsecutive(dates)) {
-      const checkIn = nights[0];
-      const checkOut = addDays(nights[nights.length - 1], 1);
-      if (checkOut < today) continue; // finished stays are hidden
-      stays.push({
-        stayId: `${room.id}_${checkIn}`,
-        roomId: room.id,
-        roomName: room.name || room.id,
-        checkIn,
-        checkOut,
-        nights: nights.length,
+    for (const block of byRoom[room.id] ?? []) {
+      // Blocks are contiguous by construction; split defensively if not.
+      groupConsecutive(block.dates).forEach((nights, i) => {
+        const checkIn = nights[0];
+        const checkOut = addDays(nights[nights.length - 1], 1);
+        if (checkOut < today) return; // finished stays are hidden
+        stays.push({
+          stayId: i === 0 ? block.stayId : `${block.stayId}~${i}`,
+          roomId: room.id,
+          roomName: room.name || room.id,
+          checkIn,
+          checkOut,
+          nights: nights.length,
+        });
       });
     }
   }
@@ -103,7 +69,7 @@ export async function getActiveStays(db: Db): Promise<Stay[]> {
     .collection("rooms")
     .find(
       { id: { $in: [...ROOM_IDS] } },
-      { projection: { id: 1, name: 1, availability: 1 } }
+      { projection: { id: 1, name: 1, availability: 1, blocks: 1 } }
     )
     .toArray();
   return deriveStays(rooms as unknown as RoomAvailability[]);
