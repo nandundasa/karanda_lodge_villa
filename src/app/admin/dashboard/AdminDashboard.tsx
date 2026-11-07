@@ -7,8 +7,9 @@ import AdminOverview from "../components/AdminOverview";
 import SlidesPanel from "../components/SlidesPanel";
 import GalleryPanel, { type GalleryImage } from "../components/GalleryPanel";
 import PricesPanel from "../components/PricesPanel";
-import AvailabilityPanel from "../components/AvailabilityPanel";
+import AvailabilityPanel, { type AvailabilitySave } from "../components/AvailabilityPanel";
 import { Button, ToastProvider, useToast } from "../components/ui";
+import type { StayBlock } from "@/lib/blocks";
 
 type TabKey = "overview" | "slides" | "gallery" | "prices" | "availability";
 
@@ -24,7 +25,10 @@ type Room = {
   id: string;
   name: string;
   price: number | string;
+  /** Derived booked-nights map (includes villa nights for the two rooms) */
   availability: Record<string, boolean>;
+  /** Source of truth: one block per stay */
+  blocks?: StayBlock[];
 };
 
 /** Slides may be stored as strings or (possibly nested) { url | src } objects. */
@@ -165,10 +169,13 @@ function Dashboard() {
     return ok;
   };
 
-  const saveAvailability = async (availability: Record<string, Record<string, boolean>>) => {
+  // Each room's complete set of its own booked nights. The server turns nights
+  // that are new in this save into a new stay block, unless they're listed as
+  // an extension of an existing stay (which keeps its id and ID photos).
+  const saveAvailability = async (changes: AvailabilitySave) => {
     const ok = await post(
       "/api/rooms",
-      { rooms: Object.entries(availability).map(([id, a]) => ({ id, availability: a })) },
+      { rooms: Object.entries(changes).map(([id, c]) => ({ id, bookedDates: c.bookedDates, extensions: c.extensions })) },
       "Couldn't save availability"
     );
     if (ok) await loadData();
